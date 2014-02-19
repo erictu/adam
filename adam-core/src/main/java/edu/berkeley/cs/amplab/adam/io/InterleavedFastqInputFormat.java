@@ -1,24 +1,32 @@
-// Copyright (C) 2011-2012 CRS4.
-//
-// This file is part of Hadoop-BAM.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to
-// deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-// sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-// IN THE SOFTWARE.
+/*
+ * Copyright (c) 2013. Regents of the University of California
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * This class is a Hadoop reader for "interleaved fastq" -- that is,
+ * fastq with paired reads in the same file, interleaved, rather than
+ * in two separate files. This makes it much easier to Hadoopily slice
+ * up a single file and feed the slices into an aligner.
+ * The format is the same as fastq, but records are expected to alternate
+ * between /1 and /2.
+ *
+ * This reader is based on the FastqInputFormat that's part of Hadoop-BAM,
+ * found at http://sourceforge.net/p/hadoop-bam/code/ci/master/tree/src/fi/tkk/ics/hadoop/bam/FastqInputFormat.java
+ *
+ * --Jeremy Elson (jelson@microsoft.com), Feb 2014
+ */
 
 package edu.berkeley.cs.amplab.adam.io;
 
@@ -75,16 +83,8 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 
 		private LineReader lineReader;
 		private InputStream inputStream;
-		private Text currentValue = new Text();
-
-		/* If true, will scan the identifier for read data as specified in the Casava
-		 * users' guide v1.8:
-		 * @<instrument>:<run number>:<flowcell ID>:<lane>:<tile>:<x-pos>:<y-pos> <read>:<is filtered>:<control number>:<index sequence>
-		 * After the first name that doesn't match lookForIlluminaIdentifier will be
-		 * set to false and no further scanning will be done.
-		 */
-		private boolean lookForIlluminaIdentifier = true;
-		private static final Pattern ILLUMINA_PATTERN = Pattern.compile("([^:]+):(\\d+):([^:]*):(\\d+):(\\d+):(-?\\d+):(-?\\d+)\\s+([123]):([YN]):(\\d+):(.*)");
+		private Text currentValue;
+		private byte[] newline = "\n".getBytes();
 
 		// How long can a read get?
 		private static final int MAX_LINE_LENGTH = 10000;
@@ -126,9 +126,9 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 		{
 			Text buffer = new Text();
 
-			if (start > 0)
+			if (true) // (start > 0) // use start>0 to assume that files start with valid data
 			{
-				// Advance to the start of the first record
+				// Advance to the start of the first record that ends with /1
 				// We use a temporary LineReader to read lines until we find the
 				// position of the right one.  We then seek the file to that position.
 				stream.seek(start);
@@ -138,8 +138,16 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 				do
 			 	{
 					bytesRead = reader.readLine(buffer, (int)Math.min(MAX_LINE_LENGTH, end - start));
-					if (bytesRead > 0 && (buffer.getLength() <= 0 || buffer.getBytes()[0] != '@'))
+					if (bytesRead > 0 && (
+							      buffer.getLength() <= 0 ||
+							      buffer.getBytes()[0] != '@' || 
+							      buffer.getBytes()[buffer.getLength()-2] != '/' ||
+							      buffer.getBytes()[buffer.getLength()-1] != '1'
+							      )
+					    )
+					{
 						start += bytesRead;
+					}
 					else
 					{
 						// line starts with @.  Read two more and verify that it starts with a +
@@ -163,8 +171,7 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 
 				stream.seek(start);
 			}
-			// else
-			//	if start == 0 we presume it starts with a valid fastq record
+
 			pos = start;
 		}
 
@@ -196,6 +203,8 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 		 */
 		public boolean nextKeyValue() throws IOException, InterruptedException
 		{
+			currentValue = new Text();
+
 			return next(currentValue);
 		}
 
@@ -210,9 +219,9 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 		/**
 		 * Create an object of the appropriate type to be used as a key.
 		 */
-		public Void createKey()
+		public Text createKey()
 		{
-			return null;
+			return new Text();
 		}
 
 		/**
@@ -248,7 +257,7 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 		{
 			// ID line
 			readName.clear();
-			long skipped = readLineInto(readName, true);
+			long skipped = appendLineInto(readName, true);
 			pos += skipped;
 			if (skipped == 0)
 				return false; // EOF
@@ -258,13 +267,13 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 			value.append(readName.getBytes(), 0, readName.getLength());
 
 			// sequence
-			readLineInto(value, false);
+			appendLineInto(value, false);
 
 			// separator line
-			readLineInto(value, false);
+			appendLineInto(value, false);
 
 			// quality
-			readLineInto(value, false);
+			appendLineInto(value, false);
 
 			return true;
 		}
@@ -290,13 +299,13 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 				if (!gotData)
 					return false;
 
+				
+
 				// second read of the pair
 				gotData = lowLevelFastqRead(readName2, value);
 
 				if (!gotData)
 					return false;
-
-				// TODO: make sure read one ends with /1, the other ends with /2
 
 				return true;
 			}
@@ -306,12 +315,18 @@ public class InterleavedFastqInputFormat extends FileInputFormat<Void,Text>
 		}
 
 
-		private int readLineInto(Text dest, boolean eofOk) throws EOFException, IOException
+		private int appendLineInto(Text dest, boolean eofOk) throws EOFException, IOException
 		{
-			int bytesRead = lineReader.readLine(dest, MAX_LINE_LENGTH);
+			Text buf = new Text();
+			int bytesRead = lineReader.readLine(buf, MAX_LINE_LENGTH);
+
 			if (bytesRead < 0 || (bytesRead == 0 && !eofOk))
 				throw new EOFException();
+
+			dest.append(buf.getBytes(), 0, buf.getLength());
+			dest.append(newline, 0, 1);
 			pos += bytesRead;
+
 			return bytesRead;
 		}
 	}
