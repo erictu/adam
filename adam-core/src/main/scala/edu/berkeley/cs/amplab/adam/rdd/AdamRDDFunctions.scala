@@ -22,6 +22,7 @@ import edu.berkeley.cs.amplab.adam.avro.{ADAMPileup,
 import edu.berkeley.cs.amplab.adam.converters.GenotypesToVariantsConverter
 import edu.berkeley.cs.amplab.adam.models.{SequenceRecord,
                                            SequenceDictionary,
+                                           RecordGroupDictionary,
                                            SingleReadBucket, 
                                            SnpTable, 
                                            ReferencePosition, 
@@ -138,6 +139,16 @@ class AdamRecordRDDFunctions(rdd: RDD[ADAMRecord]) extends AdamSequenceDictionar
 
   def getSequenceRecordsFromElement (elem: ADAMRecord): scala.collection.Set[SequenceRecord] = {
     SequenceRecord.fromADAMRecord(elem)
+  }
+
+  //ERICS STUFF BEGINS HERE
+  def getReadGroupDictionary(): RecordGroupDictionary = {     
+    val rgNames = rdd.map(r=>rdd.getRecordGroupName)      // missing parameter type for expanded function ((> x$1.getRecordGroupName) SEE val rgNames = rdd.map(r=>_.getRecordGroupName)
+    rgNames.distinct()   // found nothing required rgd
+    rgNames.collect()    // found nothing required rgd
+    rgNames.toSeq      
+                 //type mismatch??
+  //ERICS STUFF ENDS HERE
   }
 
   def adamSortReadsByReferencePosition(): RDD[ADAMRecord] = {
