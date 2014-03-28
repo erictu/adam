@@ -143,13 +143,26 @@ class AdamRecordRDDFunctions(rdd: RDD[ADAMRecord]) extends AdamSequenceDictionar
 
   //ERICS STUFF BEGINS HERE
   def getReadGroupDictionary(): RecordGroupDictionary = {     
-    val rgNames = rdd.map(r=>rdd.getRecordGroupName)      // missing parameter type for expanded function ((> x$1.getRecordGroupName) SEE val rgNames = rdd.map(r=>_.getRecordGroupName)
-    rgNames.distinct()   // found nothing required rgd
-    rgNames.collect()    // found nothing required rgd
-    rgNames.toSeq      
+    val rgNames = rdd.map(r=>r.getRecordGroupName.toString)      // missing parameter type for expanded function ((> x$1.getRecordGroupName) SEE val rgNames = rdd.map(r=>_.getRecordGroupName)
+    .distinct()   // found nothing required rgd
+    .collect()    // found nothing required rgd
+    .toSeq      
+
                  //type mismatch??
-  //ERICS STUFF ENDS HERE
+    new RecordGroupDictionary(rgNames)
   }
+
+  def convertToSam(convert(record, sDict, rgDict), rdd.RDD[ADAMRecord]): SAMRecord = { 
+    val sd = rdd.sequenceDictionary()         
+    val rgd = rdd.getReadGroupDictionary()        
+    val sdBcast = rdd.context.broadcast(sd)
+    val rgBcast = rdd.context.broadcast(rgd)
+    rdd.map(r=>convert(r, sdBcast.value, rgBcast.value))
+
+
+    // samRDD.saveNewAPIHadoopFile(args.outputPath) 
+  }
+
 
   def adamSortReadsByReferencePosition(): RDD[ADAMRecord] = {
     log.info("Sorting reads by reference position")
