@@ -45,6 +45,9 @@ import parquet.hadoop.ParquetOutputFormat
 import parquet.hadoop.metadata.CompressionCodecName
 import parquet.hadoop.util.ContextUtil
 import scala.math.{min, max}
+//added these
+import net.sf.samtools.SAMRecord 
+import edu.berkeley.cs.amplab.adam.converters.ADAMRecordConverter
 
 class AdamRDDFunctions[T <% SpecificRecord : Manifest](rdd: RDD[T]) extends Serializable {
 
@@ -152,17 +155,14 @@ class AdamRecordRDDFunctions(rdd: RDD[ADAMRecord]) extends AdamSequenceDictionar
     new RecordGroupDictionary(rgNames)
   }
 
-  def convertToSam(convert(record, sDict, rgDict), rdd.RDD[ADAMRecord]): SAMRecord = { 
-    val sd = rdd.sequenceDictionary()         
+  def convertToSam(convert: (ADAMRecord, SequenceDictionary, RecordGroupDictionary) => SAMRecord, rdd: RDD[ADAMRecord]): SAMRecord = { //must feed in function like this?
+    val sd = rdd.adamGetSequenceDictionary()         //where'd this go, is this the correct one?
     val rgd = rdd.getReadGroupDictionary()        
     val sdBcast = rdd.context.broadcast(sd)
     val rgBcast = rdd.context.broadcast(rgd)
     rdd.map(r=>convert(r, sdBcast.value, rgBcast.value))
-
-
-    // samRDD.saveNewAPIHadoopFile(args.outputPath) 
   }
-
+  //ERICS STUFF ENDS HERE
 
   def adamSortReadsByReferencePosition(): RDD[ADAMRecord] = {
     log.info("Sorting reads by reference position")

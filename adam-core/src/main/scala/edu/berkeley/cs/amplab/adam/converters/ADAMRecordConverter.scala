@@ -27,7 +27,7 @@ import edu.berkeley.cs.amplab.adam.models.Attribute 	//added this in
 import java.util.Date 
 
 class ADAMRecordConverter extends Serializable {
-	def convert(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary) {	
+	def convert(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary): SAMRecord = {	
 		val header: SAMFileHeader = createSAMHeader(dict, readGroups)
 		val builder: SAMRecord = new SAMRecord(header)
 
@@ -110,7 +110,7 @@ class ADAMRecordConverter extends Serializable {
 			})
 		}
 
-
+		//where does this actually get put?
 		val readGroup: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName) 	
 		readGroup.setSequencingCenter(adamRecord.getRecordGroupSequencingCenter.toString) 
 		
@@ -123,6 +123,9 @@ class ADAMRecordConverter extends Serializable {
 		readGroup.setPlatform(adamRecord.getRecordGroupPlatform)
 		readGroup.setPlatformUnit(adamRecord.getRecordGroupPlatformUnit)
 		readGroup.setSample(adamRecord.getRecordGroupSample)
+
+		builder
+
 	}
 
 	def createSAMHeader(sd: SequenceDictionary, rgd: RecordGroupDictionary): SAMFileHeader = {    
