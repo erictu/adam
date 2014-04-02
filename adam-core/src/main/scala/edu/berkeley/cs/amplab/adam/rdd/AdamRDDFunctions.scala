@@ -144,25 +144,24 @@ class AdamRecordRDDFunctions(rdd: RDD[ADAMRecord]) extends AdamSequenceDictionar
     SequenceRecord.fromADAMRecord(elem)
   }
 
-  //ERICS STUFF BEGINS HERE
   def getReadGroupDictionary(): RecordGroupDictionary = {     
-    val rgNames = rdd.map(r=>r.getRecordGroupName.toString)      // missing parameter type for expanded function ((> x$1.getRecordGroupName) SEE val rgNames = rdd.map(r=>_.getRecordGroupName)
-    .distinct()   // found nothing required rgd
-    .collect()    // found nothing required rgd
+    val rgNames = rdd.map(r=>r.getRecordGroupName.toString)     
+    .distinct()   
+    .collect()    
     .toSeq      
 
-                 //type mismatch??
     new RecordGroupDictionary(rgNames)
   }
 
-  def convertToSam(convert: (ADAMRecord, SequenceDictionary, RecordGroupDictionary) => SAMRecord, rdd: RDD[ADAMRecord]): SAMRecord = { //must feed in function like this?
-    val sd = rdd.adamGetSequenceDictionary()         //where'd this go, is this the correct one?
+  def convertToSam(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary, rdd: RDD[ADAMRecord]): RDD[SAMRecord] = { 
+    val sd = rdd.adamGetSequenceDictionary()         
     val rgd = rdd.getReadGroupDictionary()        
     val sdBcast = rdd.context.broadcast(sd)
     val rgBcast = rdd.context.broadcast(rgd)
-    rdd.map(r=>convert(r, sdBcast.value, rgBcast.value))
+    val adamRecordConverter = new ADAMRecordConverter 
+    rdd.map(r=>adamRecordConverter.convert(r, sdBcast.value, rgBcast.value)) 
   }
-  //ERICS STUFF ENDS HERE
+
 
   def adamSortReadsByReferencePosition(): RDD[ADAMRecord] = {
     log.info("Sorting reads by reference position")

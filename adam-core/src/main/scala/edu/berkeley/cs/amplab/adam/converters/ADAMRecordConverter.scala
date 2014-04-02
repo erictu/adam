@@ -28,7 +28,19 @@ import java.util.Date
 
 class ADAMRecordConverter extends Serializable {
 	def convert(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary): SAMRecord = {	
-		val header: SAMFileHeader = createSAMHeader(dict, readGroups)
+		val readGroupFromADAM: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName) 	
+		readGroupFromADAM.setSequencingCenter(adamRecord.getRecordGroupSequencingCenter.toString) 
+		readGroupFromADAM.setRunDate(new Date(adamRecord.getRecordGroupRunDateEpoch))		
+		readGroupFromADAM.setDescription(adamRecord.getRecordGroupDescription)
+		readGroupFromADAM.setFlowOrder(adamRecord.getRecordGroupFlowOrder)
+		readGroupFromADAM.setKeySequence(adamRecord.getRecordGroupKeySequence)
+		readGroupFromADAM.setLibrary(adamRecord.getRecordGroupLibrary)
+		readGroupFromADAM.setPredictedMedianInsertSize(adamRecord.getRecordGroupPredictedMedianInsertSize) 
+		readGroupFromADAM.setPlatform(adamRecord.getRecordGroupPlatform)
+		readGroupFromADAM.setPlatformUnit(adamRecord.getRecordGroupPlatformUnit)
+		readGroupFromADAM.setSample(adamRecord.getRecordGroupSample)
+
+		val header: SAMFileHeader = createSAMHeader(dict, readGroups, readGroupFromADAM)
 		val builder: SAMRecord = new SAMRecord(header)
 
 		builder.setReadName(adamRecord.getReadName.toString) 
@@ -111,32 +123,26 @@ class ADAMRecordConverter extends Serializable {
 		}
 
 		//where does this actually get put?
-		val readGroup: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName) 	
-		readGroup.setSequencingCenter(adamRecord.getRecordGroupSequencingCenter.toString) 
-		
-		readGroup.setRunDate(new Date(adamRecord.getRecordGroupRunDateEpoch))		
-		readGroup.setDescription(adamRecord.getRecordGroupDescription)
-		readGroup.setFlowOrder(adamRecord.getRecordGroupFlowOrder)
-		readGroup.setKeySequence(adamRecord.getRecordGroupKeySequence)
-		readGroup.setLibrary(adamRecord.getRecordGroupLibrary)
-		readGroup.setPredictedMedianInsertSize(adamRecord.getRecordGroupPredictedMedianInsertSize) 
-		readGroup.setPlatform(adamRecord.getRecordGroupPlatform)
-		readGroup.setPlatformUnit(adamRecord.getRecordGroupPlatformUnit)
-		readGroup.setSample(adamRecord.getRecordGroupSample)
+
 
 		builder
 
 	}
 
-	def createSAMHeader(sd: SequenceDictionary, rgd: RecordGroupDictionary): SAMFileHeader = {    
+	def createSAMHeader(sd: SequenceDictionary, rgd: RecordGroupDictionary, rgfa: SAMReadGroupRecord): SAMFileHeader = {    
     	val samSequenceDictionary = sd.toSAMSequenceDictionary       
       	val samHeader = new SAMFileHeader
       	samHeader.setSequenceDictionary(samSequenceDictionary)         
     	rgd.readGroups.foreach(kv=> {     
       		val(_, name) = kv
       		val nextMember = new SAMReadGroupRecord(name.toString)
-      		samHeader.addReadGroup(nextMember) 
+      		if (!nextMember.equivalent(rgfa)) {
+      			samHeader.addReadGroup(nextMember) 
+      		}
   		})
+  		samHeader.addReadGroup(rgfa)		//adds in SAMReadGroupRecord from ADAM RecordGroup
+
   		samHeader
     }
 }
+
