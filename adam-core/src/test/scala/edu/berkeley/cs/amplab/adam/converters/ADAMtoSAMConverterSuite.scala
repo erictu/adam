@@ -27,6 +27,9 @@ import edu.berkeley.cs.amplab.adam.util.SparkFunSuite
 import java.io.File
 import org.apache.hadoop.fs.{FileSystem, Path}
 import net.sf.samtools.SAMFileHeader
+import fi.tkk.ics.hadoop.bam.{SAMRecordWritable, AnySAMInputFormat}
+import org.apache.hadoop.io.LongWritable
+import parquet.hadoop.util.ContextUtil
 
 class ADAMtoSAMConverterSuite extends SparkFunSuite {
   /*
@@ -49,28 +52,21 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     val seqDict = adamBamDictionaryLoad(samHeader)     
     val readGroups =  adamBamLoadReadGroups(samHeader)
 
-    val convertedToADAM = sc.adamLoad(startingSAM)    
+    //this is giving me an RDD of nothing?
+    val adamRecord = sc.adamLoad(startingSAM)    
 
-    //ERROR: Class[T] does not take parameters
-    val origFile = sc.newAPIHadoopFile(filePath.toString, classOf(SAMInputFormat), classOf(    //reads them in from disk before you convert them
-      Writable), classOf(SAMRecordWritable))
+    val origFile = sc.newAPIHadoopFile(filePath.toString, classOf[AnySAMInputFormat], classOf[LongWritable],
+      classOf[SAMRecordWritable])
     val ADAMRecordConverter = new ADAMRecordConverter
     val backToSAM = origFile.map(r => ADAMRecordConverter.convert(adamRecord, seqdict, readGroups))   //in adamBamLoad
-    // val backToSAM = ADAMRecordConverter.convert(convertedToSAM, seqDict, readGroups)     //or this
 
     //assertion statements
     val backToSAMHeader = backToSAM.getHeader
     assert(samHeader == backToSAMHeader)   
 
-    //ERROR:
-    // overloaded method value assert with alternatives:
-    // (o: Option[String])Unit <and>
-    // (o: Option[String],clue: Any)Unit <and>
-    // (condition: Boolean,clue: Any)Unit <and>
-    // (condition: Boolean)Unit
-    // cannot be applied to (readGroups: edu.berkeley.cs.amplab.adam.models.RecordGroupDictionary)
+  
     assert(seqDict == adamBamDictionaryLoad(backToSAMHeader))
-    assert(readGroups = adamBamLoadReadGroups(backToSAMHeader))
+    assert(readGroups == adamBamLoadReadGroups(backToSAMHeader))
 
 
   }
@@ -83,7 +79,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   def adamBamLoadReadGroups(samHeader : SAMFileHeader) : RecordGroupDictionary = {
     RecordGroupDictionary.fromSAMHeader(samHeader)
   }
-  
+
   //adam-core/src/test/scala/edu/berkeley/cs/amplab/adam/algorithms/realignmenttarget/IndelRealignmentTargetSuite.scala
   def make_read(start : Long, cigar : String, mdtag : String, length : Int, id : Int = 0) : ADAMRecord = {
     val sequence : String = "A" * length
