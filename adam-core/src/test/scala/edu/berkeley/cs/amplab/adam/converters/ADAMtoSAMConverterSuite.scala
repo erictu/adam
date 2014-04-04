@@ -30,6 +30,7 @@ import net.sf.samtools.SAMFileHeader
 import fi.tkk.ics.hadoop.bam.{SAMRecordWritable, AnySAMInputFormat}
 import org.apache.hadoop.io.LongWritable
 import parquet.hadoop.util.ContextUtil
+import org.apache.spark.rdd.RDD
 
 class ADAMtoSAMConverterSuite extends SparkFunSuite {
   /*
@@ -37,7 +38,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   * then convert back to SAM with ADAMRecordConverter
   * Then Compare
   */
-  test("Basic test comparing two sam files to see if correct fields outputted") {
+  sparkTest("Basic test comparing two sam files to see if correct fields outputted") {
     val startingSAM = ClassLoader.getSystemClassLoader.getResource("small.sam").getFile
     val filePath = ClassLoader.getSystemClassLoader.getResource("small.sam")
 
@@ -95,6 +96,12 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
       .setMismatchingPositions(mdtag)
       .build()
   }
+  sparkTest("creating simple target from read with deletion") {
+    val read = make_read(3L, "2M3D2M", "2^AAA2", 4)
+    val read_rdd: RDD[ADAMRecord] = sc.makeRDD(Seq(read), 1)
+
+  }
+
 }
 
 
