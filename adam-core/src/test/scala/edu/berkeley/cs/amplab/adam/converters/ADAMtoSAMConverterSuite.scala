@@ -19,7 +19,7 @@ import org.broadinstitute.variant.variantcontext.{Allele, VariantContextBuilder,
 import edu.berkeley.cs.amplab.adam.avro.VariantType
 import edu.berkeley.cs.amplab.adam.avro.ADAMRecord
 import scala.collection.JavaConverters._
-import edu.berkeley.cs.amplab.adam.models.{RecordGroupDictionary, SequenceDictionary}
+import edu.berkeley.cs.amplab.adam.models.{RecordGroupDictionary, SequenceDictionary, SequenceRecord}
 import edu.berkeley.cs.amplab.adam.rdd.AdamContext._
 import edu.berkeley.cs.amplab.adam.rdd.AdamRDDFunctions
 import fi.tkk.ics.hadoop.bam.util.SAMHeaderReader
@@ -31,6 +31,7 @@ import fi.tkk.ics.hadoop.bam.{SAMRecordWritable, AnySAMInputFormat}
 import org.apache.hadoop.io.LongWritable
 import parquet.hadoop.util.ContextUtil
 import org.apache.spark.rdd.RDD
+import edu.berkeley.cs.amplab.adam.converters.{SAMRecordConverter, ADAMRecordConverter}
 
 class ADAMtoSAMConverterSuite extends SparkFunSuite {
   /*
@@ -38,50 +39,50 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   * then convert back to SAM with ADAMRecordConverter
   * Then Compare
   */
-  sparkTest("Basic test comparing two sam files to see if correct fields outputted") {
-    val startingSAM = ClassLoader.getSystemClassLoader.getResource("small.sam").getFile
-    val filePath = ClassLoader.getSystemClassLoader.getResource("small.sam")
+  // sparkTest("Basic test comparing two sam files to see if correct fields outputted") {
+  //   val startingSAM = ClassLoader.getSystemClassLoader.getResource("small.sam").getFile
+  //   val filePath = ClassLoader.getSystemClassLoader.getResource("small.sam")
 
-    //trying to get original Sam parts
+  //   //trying to get original Sam parts
 
-    //ERROR:
-    // overloaded method constructor Path with alternatives:
-    // (x$1: java.net.URI)org.apache.hadoop.fs.Path <and>
-    // (x$1: String)org.apache.hadoop.fs.Path
-    // cannot be applied to (java.net.URL)
-    val samHeader = SAMHeaderReader.readSAMHeaderFrom(new Path(filePath), sc.hadoopConfiguration) 
-    val seqDict = adamBamDictionaryLoad(samHeader)     
-    val readGroups =  adamBamLoadReadGroups(samHeader)
+  //   //ERROR:
+  //   // overloaded method constructor Path with alternatives:
+  //   // (x$1: java.net.URI)org.apache.hadoop.fs.Path <and>
+  //   // (x$1: String)org.apache.hadoop.fs.Path
+  //   // cannot be applied to (java.net.URL)
+  //   val samHeader = SAMHeaderReader.readSAMHeaderFrom(new Path(filePath), sc.hadoopConfiguration) 
+  //   val seqDict = adamBamDictionaryLoad(samHeader)     
+  //   val readGroups =  adamBamLoadReadGroups(samHeader)
 
-    //this is giving me an RDD of nothing?
-    val adamRecord = sc.adamLoad(startingSAM)    
+  //   //this is giving me an RDD of nothing? Should convert to ADAM
+  //   val adamRecord = sc.adamLoad(startingSAM)    
 
-    val origFile = sc.newAPIHadoopFile(filePath.toString, classOf[AnySAMInputFormat], classOf[LongWritable],
-      classOf[SAMRecordWritable])
-    val ADAMRecordConverter = new ADAMRecordConverter
-    val backToSAM = origFile.map(r => ADAMRecordConverter.convert(adamRecord, seqdict, readGroups))   //in adamBamLoad
+  //   val origFile = sc.newAPIHadoopFile(filePath.toString, classOf[AnySAMInputFormat], classOf[LongWritable],
+  //     classOf[SAMRecordWritable])
+  //   val ADAMRecordConverter = new ADAMRecordConverter
+  //   val backToSAM = origFile.map(r => ADAMRecordConverter.convert(adamRecord, seqdict, readGroups))   //in adamBamLoad
 
-    //assertion statements
-    val backToSAMHeader = backToSAM.getHeader
-    assert(samHeader == backToSAMHeader)   
+  //   //assertion statements
+  //   val backToSAMHeader = backToSAM.getHeader
+  //   assert(samHeader == backToSAMHeader)   
 
   
-    assert(seqDict == adamBamDictionaryLoad(backToSAMHeader))
-    assert(readGroups == adamBamLoadReadGroups(backToSAMHeader))
+  //   assert(seqDict == adamBamDictionaryLoad(backToSAMHeader))
+  //   assert(readGroups == adamBamLoadReadGroups(backToSAMHeader))
 
 
-  }
+  // }
 
-  def adamBamDictionaryLoad(samHeader : SAMFileHeader): SequenceDictionary = {
-    SequenceDictionary.fromSAMHeader(samHeader)
+  // def adamBamDictionaryLoad(samHeader : SAMFileHeader): SequenceDictionary = {
+  //   SequenceDictionary.fromSAMHeader(samHeader)
 
-  }
+  // }
 
-  def adamBamLoadReadGroups(samHeader : SAMFileHeader) : RecordGroupDictionary = {
-    RecordGroupDictionary.fromSAMHeader(samHeader)
-  }
+  // def adamBamLoadReadGroups(samHeader : SAMFileHeader) : RecordGroupDictionary = {
+  //   RecordGroupDictionary.fromSAMHeader(samHeader)
+  // }
 
-  //adam-core/src/test/scala/edu/berkeley/cs/amplab/adam/algorithms/realignmenttarget/IndelRealignmentTargetSuite.scala
+  // //adam-core/src/test/scala/edu/berkeley/cs/amplab/adam/algorithms/realignmenttarget/IndelRealignmentTargetSuite.scala
   def make_read(start : Long, cigar : String, mdtag : String, length : Int, id : Int = 0) : ADAMRecord = {
     val sequence : String = "A" * length
     ADAMRecord.newBuilder()
@@ -96,11 +97,38 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
       .setMismatchingPositions(mdtag)
       .build()
   }
-  sparkTest("creating simple target from read with deletion") {
-    val read = make_read(3L, "2M3D2M", "2^AAA2", 4)
-    val read_rdd: RDD[ADAMRecord] = sc.makeRDD(Seq(read), 1)
 
+  //converts back and forth. any other way to do this?
+  sparkTest("creating simple adam read") {
+    val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
+    val adamRecordConverter = new ADAMRecordConverter
+    val samRecordConverter = new SAMRecordConverter
+    val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    val readGroups = new RecordGroupDictionary(Seq("testing"))
+
+    //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
+    val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
+    val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
+    assert(adamRead.getReadName == backToADAM.getReadName)
+    assert(adamRead.getSequence == backToADAM.getSequence)
+    assert(adamRead.getQual == backToADAM.getQual)
+    assert(adamRead.getCigar == backToADAM.getCigar)  //how to convert without the stuff?
   }
+
+  // - creating simple adam read *** FAILED ***
+  // java.lang.NullPointerException:
+  // at edu.berkeley.cs.amplab.adam.rdd.AdamContext$.charSequenceToString(AdamContext.scala:88)
+  // at edu.berkeley.cs.amplab.adam.converters.ADAMRecordConverter.convert(ADAMRecordConverter.scala:31)
+  // at edu.berkeley.cs.amplab.adam.converters.ADAMtoSAMConverterSuite$$anonfun$1.apply$mcV$sp(ADAMtoSAMConverterSuite.scala:110)
+  // at edu.berkeley.cs.amplab.adam.util.SparkFunSuite$$anonfun$sparkTest$1.apply$mcV$sp(SparkFunSuite.scala:102)
+  // at edu.berkeley.cs.amplab.adam.util.SparkFunSuite$$anonfun$sparkTest$1.apply(SparkFunSuite.scala:98)
+  // at edu.berkeley.cs.amplab.adam.util.SparkFunSuite$$anonfun$sparkTest$1.apply(SparkFunSuite.scala:98)
+  // at org.scalatest.FunSuiteLike$$anon$1.apply(FunSuiteLike.scala:129)
+  // at org.scalatest.Suite$class.withFixture(Suite.scala:1974)
+  // at org.scalatest.FunSuite.withFixture(FunSuite.scala:1182)
+  // at org.scalatest.FunSuiteLike$class.invokeWithFixture$1(FunSuiteLike.scala:126)
+  // ...
+
 
 }
 

@@ -122,11 +122,7 @@ class ADAMRecordConverter extends Serializable {
 			})
 		}
 
-		//where does this actually get put?
-
-
 		builder
-
 	}
 
 	def createSAMHeader(sd: SequenceDictionary, rgd: RecordGroupDictionary, rgfa: SAMReadGroupRecord): SAMFileHeader = {    
