@@ -127,7 +127,7 @@ class SAMRecordConverter extends Serializable {
         case None =>
       }
       recordGroup.getId
-      builder.setRecordGroupId(readGroups(recordGroup.getReadGroupId))
+      builder.setRecordGroupId(readGroups(recordGroup.getReadGroupId)) //to ensure consistent mapping from string to int
         .setRecordGroupName(recordGroup.getReadGroupId)
         .setRecordGroupSequencingCenter(recordGroup.getSequencingCenter)
         .setRecordGroupDescription(recordGroup.getDescription)

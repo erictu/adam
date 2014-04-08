@@ -28,9 +28,12 @@ import java.util.Date
 
 class ADAMRecordConverter extends Serializable {
 	def convert(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary): SAMRecord = {	
-		val readGroupFromADAM: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName) 	
-		readGroupFromADAM.setSequencingCenter(adamRecord.getRecordGroupSequencingCenter.toString) 
-		readGroupFromADAM.setRunDate(new Date(adamRecord.getRecordGroupRunDateEpoch))		
+		assert(adamRecord.getRecordGroupName != null, "can't get record group name if not set")
+		val readGroupFromADAM: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName)
+		Option(adamRecord.getRecordGroupSequencingCenter).foreach(v => readGroupFromADAM.setSequencingCenter(v.toString)) 	
+		// readGroupFromADAM.setSequencingCenter(adamRecord.getRecordGroupSequencingCenter.toString) 
+		Option(adamRecord.getRecordGroupRunDateEpoch).foreach(v => readGroupFromADAM.setRunDate(new Date (v)))
+		// readGroupFromADAM.setRunDate(new Date(adamRecord.getRecordGroupRunDateEpoch))		
 		readGroupFromADAM.setDescription(adamRecord.getRecordGroupDescription)
 		readGroupFromADAM.setFlowOrder(adamRecord.getRecordGroupFlowOrder)
 		readGroupFromADAM.setKeySequence(adamRecord.getRecordGroupKeySequence)
