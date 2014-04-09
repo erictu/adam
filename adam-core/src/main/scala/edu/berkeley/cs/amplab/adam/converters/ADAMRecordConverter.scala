@@ -31,44 +31,42 @@ class ADAMRecordConverter extends Serializable {
 		assert(adamRecord.getRecordGroupName != null, "can't get record group name if not set")
 		val readGroupFromADAM: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName)
 		Option(adamRecord.getRecordGroupSequencingCenter).foreach(v => readGroupFromADAM.setSequencingCenter(v.toString)) 	
-		// readGroupFromADAM.setSequencingCenter(adamRecord.getRecordGroupSequencingCenter.toString) 
-		Option(adamRecord.getRecordGroupRunDateEpoch).foreach(v => readGroupFromADAM.setRunDate(new Date (v)))
-		// readGroupFromADAM.setRunDate(new Date(adamRecord.getRecordGroupRunDateEpoch))		
-		readGroupFromADAM.setDescription(adamRecord.getRecordGroupDescription)
-		readGroupFromADAM.setFlowOrder(adamRecord.getRecordGroupFlowOrder)
-		readGroupFromADAM.setKeySequence(adamRecord.getRecordGroupKeySequence)
-		readGroupFromADAM.setLibrary(adamRecord.getRecordGroupLibrary)
-		readGroupFromADAM.setPredictedMedianInsertSize(adamRecord.getRecordGroupPredictedMedianInsertSize) 
-		readGroupFromADAM.setPlatform(adamRecord.getRecordGroupPlatform)
-		readGroupFromADAM.setPlatformUnit(adamRecord.getRecordGroupPlatformUnit)
-		readGroupFromADAM.setSample(adamRecord.getRecordGroupSample)
+		Option(adamRecord.getRecordGroupRunDateEpoch).foreach(v => readGroupFromADAM.setRunDate(new Date(v)))
+		Option(adamRecord.getRecordGroupDescription).foreach(v => readGroupFromADAM.setDescription(v))
+		Option(adamRecord.getRecordGroupFlowOrder).foreach(v => readGroupFromADAM.setFlowOrder(v))
+		Option(adamRecord.getRecordGroupKeySequence).foreach(v => readGroupFromADAM.setKeySequence(v))
+		Option(adamRecord.getRecordGroupLibrary).foreach(v => readGroupFromADAM.setLibrary(v))
+		Option(adamRecord.getRecordGroupPredictedMedianInsertSize).foreach(v => readGroupFromADAM.setPredictedMedianInsertSize(v))
+		Option(adamRecord.getRecordGroupPlatform).foreach(v => readGroupFromADAM.setPlatform(v))
+		Option(adamRecord.getRecordGroupPlatformUnit).foreach(v => readGroupFromADAM.setPlatformUnit(v))
+		Option(adamRecord.getRecordGroupSample).foreach(v => readGroupFromADAM.setSample(v))
 
 		val header: SAMFileHeader = createSAMHeader(dict, readGroups, readGroupFromADAM)
 		val builder: SAMRecord = new SAMRecord(header)
 
 		builder.setReadName(adamRecord.getReadName.toString) 
 		builder.setReadString(adamRecord.getSequence)	
-		builder.setCigarString(adamRecord.getCigar) 		
+		builder.setCigarString(adamRecord.getCigar) 		//should I be setting the cigar?
 		builder.setBaseQualityString(adamRecord.getQual)	
 
-		val readReference: Int = adamRecord.getReferenceId				
-		if (readReference != null) {
-			builder.setReferenceIndex(adamRecord.getReferenceId)			
-			builder.setReferenceName(adamRecord.getReferenceName)
+		// val readReference: Int = adamRecord.getReferenceId				
+		if (adamRecord.getReferenceId != null) {
+			builder.setReferenceIndex(adamRecord.getReferenceId)	 		//reference index must be found in seqdict
+			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v))
+			// builder.setReferenceName(adamRecord.getReferenceName)
 
-			val start: Int = adamRecord.getStart.toInt		
-			if (start!= 0) {
-				builder.setAlignmentStart(start + 1) 					
+			if (adamRecord.getStart != null) {
+				val start: Int = adamRecord.getStart.toInt		
+				if (start!= 0) {
+					builder.setAlignmentStart(start + 1) 					
+				}
 			}
-		
-			val mapq: Int = adamRecord.getMapq								
-			if (mapq != null) {
-				builder.setMappingQuality(mapq)	
-			}
+
+			Option(adamRecord.getMapq).foreach(v => builder.setMappingQuality(v))
 		}
 
-		val mateReference: Int = adamRecord.getMateReferenceId		
-		if (mateReference != null) {
+		// val mateReference: Int = adamRecord.getMateReferenceId		
+		if (adamRecord.getMateReferenceId != null) {
 			builder.setMateReferenceIndex(adamRecord.getMateReferenceId)
 			builder.setMateReferenceName(adamRecord.getMateReference)		
 
@@ -144,4 +142,3 @@ class ADAMRecordConverter extends Serializable {
   		samHeader
     }
 }
-
