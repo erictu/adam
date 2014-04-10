@@ -112,11 +112,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
     assert(adamRead.getReadName == backToADAM.getReadName)
-    // assert(adamRead.getSequence == backToADAM.getSequence)
-    // assert(adamRead.getQual == backToADAM.getQual)
-    // assert(adamRead.getStart == backToADAM.getStart)
-    // assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
-    // assert(adamRead.getReferenceId == backToADAM.getReferenceId)    
+ 
   }
 
   sparkTest("testing the fields in a converted ADAM Read") {
@@ -133,7 +129,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
     val sequence = "A" * 4
     assert(toSAM.getReadName == ("read" + 0.toString))
-    assert(toSAM.getAlignmentStart == 4) 
+    assert(toSAM.getAlignmentStart == 4) //requires referenceId to be set
     assert(toSAM.getReadUnmappedFlag == true)
     assert(toSAM.getCigarString == "2M3D2M")     
     assert(toSAM.getReadString == sequence)

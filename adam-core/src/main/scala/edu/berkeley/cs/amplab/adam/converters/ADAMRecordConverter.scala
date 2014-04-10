@@ -70,6 +70,7 @@ class ADAMRecordConverter extends Serializable {
 			builder.setMateReferenceIndex(adamRecord.getMateReferenceId)
 			builder.setMateReferenceName(adamRecord.getMateReference)		
 
+			//why must this be nested?
 			val mateStart: Int = adamRecord.getMateAlignmentStart.toInt		
 			if (mateStart > 0) {
 				builder.setMateAlignmentStart(mateStart + 1)			
