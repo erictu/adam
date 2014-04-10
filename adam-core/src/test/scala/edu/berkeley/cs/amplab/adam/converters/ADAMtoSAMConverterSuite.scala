@@ -130,7 +130,14 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
     //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
-    assert(toSAM.getCigarString == "2M3D2M")      
+    assert(toSAM.getAlignmentStart == 4) 
+    assert(toSAM.getCigarString == "2M3D2M")     
+    System.out.println("adamRead mdtag is: " + adamRead.getMismatchingPositions)
+    System.out.println("mdtag is:" + toSAM.getAttribute("MD"))
+
+    assert(toSAM.getAttribute("MD") == "2^AAA2")
+    assert(toSAM.getReadString == ("A" * 4))
+
   }
 
 
