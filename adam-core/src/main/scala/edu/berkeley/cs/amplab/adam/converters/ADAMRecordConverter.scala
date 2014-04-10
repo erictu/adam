@@ -55,9 +55,12 @@ class ADAMRecordConverter extends Serializable {
 			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v))
 			// builder.setReferenceName(adamRecord.getReferenceName)
 
+			System.out.println("before getStart")
 			if (adamRecord.getStart != null) {
 				val start: Int = adamRecord.getStart.toInt		
+				println(start)
 				if (start!= 0) {
+					println(start)
 					builder.setAlignmentStart(start + 1) 					
 				}
 			}
@@ -70,7 +73,6 @@ class ADAMRecordConverter extends Serializable {
 			builder.setMateReferenceIndex(adamRecord.getMateReferenceId)
 			builder.setMateReferenceName(adamRecord.getMateReference)		
 
-			//why must this be nested?
 			val mateStart: Int = adamRecord.getMateAlignmentStart.toInt		
 			if (mateStart > 0) {
 				builder.setMateAlignmentStart(mateStart + 1)			
@@ -113,15 +115,17 @@ class ADAMRecordConverter extends Serializable {
 			builder.setReadUnmappedFlag(true)				
 		}
 
-
+		// println("I'm right before adamRecord.getAttributes")
+		// println("adamRecord.getAttributes is: " + adamRecord.getAttributes)
+		if (adamRecord.getMismatchingPositions != null) {		
+			// println("about to set MD tag")
+			builder.setAttribute("MD", adamRecord.getMismatchingPositions)
+		}
 		if (adamRecord.getAttributes != null) {				
 			val mp = RichADAMRecord(adamRecord).tags		
+			// println("Now I'm here")
 			mp.foreach(a => { 		
-				if (adamRecord.getMismatchingPositions != null) {		
-					builder.setAttribute("MD", adamRecord.getMismatchingPositions)
-				} else {
 					builder.setAttribute(a.tag, a.value)
-				} 
 			})
 		}
 

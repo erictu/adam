@@ -99,22 +99,6 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
       .build()
   }
 
-  //converts back and forth. any other way to do this?
-  sparkTest("creating simple adam read converting it back and forth") {
-    val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
-    adamRead.setRecordGroupName("test")
-    val adamRecordConverter = new ADAMRecordConverter
-    val samRecordConverter = new SAMRecordConverter
-    val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
-    val readGroups = new RecordGroupDictionary(Seq("testing"))
-
-    //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
-    val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
-    val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
-    assert(adamRead.getReadName == backToADAM.getReadName)
- 
-  }
-
   sparkTest("testing the fields in a converted ADAM Read") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("test")
@@ -123,13 +107,10 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
     val readGroups = new RecordGroupDictionary(Seq("testing"))
-
-    //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
-
     val sequence = "A" * 4
     assert(toSAM.getReadName == ("read" + 0.toString))
-    assert(toSAM.getAlignmentStart == 4) //requires referenceId to be set
+    assert(toSAM.getAlignmentStart == 4) //requires referenceId to be set, equiv to getStart
     assert(toSAM.getReadUnmappedFlag == true)
     assert(toSAM.getCigarString == "2M3D2M")     
     assert(toSAM.getReadString == sequence)
@@ -137,28 +118,44 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     assert(toSAM.getMappingQuality == 60)
     assert(toSAM.getBaseQualityString == sequence)
 
-
-    System.out.println("adamRead mdtag is: " + adamRead.getMismatchingPositions)
-    System.out.println("mdtag is:" + toSAM.getAttribute("MD"))
-    // assert(toSAM.getAttribute("MD") == "2^AAA2")
+    // System.out.println("adamRead mdtag is: " + adamRead.getMismatchingPositions)
+    // System.out.println("mdtag is:" + toSAM.getAttribute("MD"))
+    assert(toSAM.getAttribute("MD") == "2^AAA2")
 
   }
 
+  sparkTest("creating simple adam read converting it back and forth") {
+    val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
+    adamRead.setRecordGroupName("test")
+    val adamRecordConverter = new ADAMRecordConverter
+    val samRecordConverter = new SAMRecordConverter
+    val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    val readGroups = new RecordGroupDictionary(Seq("testing"))
+    val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
+    val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
+    assert(adamRead.getReadName == backToADAM.getReadName)
+    assert(adamRead.getCigar == backToADAM.getCigar)
+    assert(adamRead.getSequence == backToADAM.getSequence)
+    assert(adamRead.getQual == backToADAM.getQual)
+    System.out.println("initial start is: " + adamRead.getStart)
+    System.out.println("intermediate start is: " + toSAM.getAlignmentStart)
+    System.out.println("end start is: " + backToADAM.getStart)
+    // assert(adamRead.getStart == backToADAM.getStart)
 
-  // - creating simple adam read *** FAILED ***
-  // java.lang.NullPointerException:
-  // at edu.berkeley.cs.amplab.adam.rdd.AdamContext$.charSequenceToString(AdamContext.scala:88)
-  // at edu.berkeley.cs.amplab.adam.converters.ADAMRecordConverter.convert(ADAMRecordConverter.scala:31)
-  // at edu.berkeley.cs.amplab.adam.converters.ADAMtoSAMConverterSuite$$anonfun$1.apply$mcV$sp(ADAMtoSAMConverterSuite.scala:110)
-  // at edu.berkeley.cs.amplab.adam.util.SparkFunSuite$$anonfun$sparkTest$1.apply$mcV$sp(SparkFunSuite.scala:102)
-  // at edu.berkeley.cs.amplab.adam.util.SparkFunSuite$$anonfun$sparkTest$1.apply(SparkFunSuite.scala:98)
-  // at edu.berkeley.cs.amplab.adam.util.SparkFunSuite$$anonfun$sparkTest$1.apply(SparkFunSuite.scala:98)
-  // at org.scalatest.FunSuiteLike$$anon$1.apply(FunSuiteLike.scala:129)
-  // at org.scalatest.Suite$class.withFixture(Suite.scala:1974)
-  // at org.scalatest.FunSuite.withFixture(FunSuite.scala:1182)
-  // at org.scalatest.FunSuiteLike$class.invokeWithFixture$1(FunSuiteLike.scala:126)
-  // ...
+    System.out.println("initial mapq is : " + adamRead.getMapq)
+    System.out.println("intermediate mapq is: " + toSAM.getMappingQuality)
+    System.out.println("end mapq is : " + backToADAM.getMapq)
+    // assert(adamRead.getMapq == backToADAM.getMapq)
+    
+    // System.out.println("initial mdtag is: " + adamRead.getMismatchingPositions)
+    // System.out.println("intermediate mdtag is:" + toSAM.getAttribute("MD"))
+    // System.out.println("end mdtag is: " + backToADAM.getMismatchingPositions)
+    assert(adamRead.getMismatchingPositions == backToADAM.getMismatchingPositions)
 
+
+
+ 
+  }
 
 }
 
