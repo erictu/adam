@@ -118,8 +118,9 @@ class ADAMRecordConverter extends Serializable {
 			mp.foreach(a => { 		
 				if (adamRecord.getMismatchingPositions != null) {		
 					builder.setAttribute("MD", adamRecord.getMismatchingPositions)
-				}
-				builder.setAttribute(a.tag, a.value) 
+				} else {
+					builder.setAttribute(a.tag, a.value)
+				} 
 			})
 		}
 

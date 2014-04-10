@@ -89,7 +89,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     ADAMRecord.newBuilder()
       .setReadName("read" + id.toString)
       .setStart(start)
-      .setReadMapped(true)
+      .setReadMapped(false)
       .setCigar(cigar)
       .setSequence(sequence)
       .setReadNegativeStrand(false)
@@ -100,29 +100,9 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   }
 
   //converts back and forth. any other way to do this?
-  // sparkTest("creating simple adam read converting it back and forth") {
-  //   val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
-  //   val adamRecordConverter = new ADAMRecordConverter
-  //   val samRecordConverter = new SAMRecordConverter
-  //   val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
-  //   val readGroups = new RecordGroupDictionary(Seq("testing"))
-
-  //   //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
-  //   val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
-  //   val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
-  //   assert(adamRead.getReadName == backToADAM.getReadName)
-  //   assert(adamRead.getSequence == backToADAM.getSequence)
-  //   assert(adamRead.getQual == backToADAM.getQual)
-  //   assert(adamRead.getStart == backToADAM.getStart)
-  //   assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
-  //   assert(adamRead.getReferenceId == backToADAM.getReferenceId)    
-  // }
-
   sparkTest("creating simple adam read converting it back and forth") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("test")
-    adamRead.setReferenceId(0)
-    // adamRead.setRecordGroupSequencingCenter("rgsc")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
@@ -130,13 +110,41 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
     //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
+    val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
+    assert(adamRead.getReadName == backToADAM.getReadName)
+    // assert(adamRead.getSequence == backToADAM.getSequence)
+    // assert(adamRead.getQual == backToADAM.getQual)
+    // assert(adamRead.getStart == backToADAM.getStart)
+    // assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
+    // assert(adamRead.getReferenceId == backToADAM.getReferenceId)    
+  }
+
+  sparkTest("testing the fields in a converted ADAM Read") {
+    val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
+    adamRead.setRecordGroupName("test")
+    adamRead.setReferenceId(0)
+    val adamRecordConverter = new ADAMRecordConverter
+    val samRecordConverter = new SAMRecordConverter
+    val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    val readGroups = new RecordGroupDictionary(Seq("testing"))
+
+    //look into what the RecordGroupDictionary has to do with the record itself, why do I have 
+    val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
+
+    val sequence = "A" * 4
+    assert(toSAM.getReadName == ("read" + 0.toString))
     assert(toSAM.getAlignmentStart == 4) 
+    assert(toSAM.getReadUnmappedFlag == true)
     assert(toSAM.getCigarString == "2M3D2M")     
+    assert(toSAM.getReadString == sequence)
+    assert(toSAM.getReadNegativeStrandFlag == false)
+    assert(toSAM.getMappingQuality == 60)
+    assert(toSAM.getBaseQualityString == sequence)
+
+
     System.out.println("adamRead mdtag is: " + adamRead.getMismatchingPositions)
     System.out.println("mdtag is:" + toSAM.getAttribute("MD"))
-
-    assert(toSAM.getAttribute("MD") == "2^AAA2")
-    assert(toSAM.getReadString == ("A" * 4))
+    // assert(toSAM.getAttribute("MD") == "2^AAA2")
 
   }
 
