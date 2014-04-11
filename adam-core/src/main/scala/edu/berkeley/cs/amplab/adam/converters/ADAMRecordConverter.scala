@@ -51,21 +51,26 @@ class ADAMRecordConverter extends Serializable {
 
 		// val readReference: Int = adamRecord.getReferenceId				
 		if (adamRecord.getReferenceId != null) {
-			builder.setReferenceIndex(adamRecord.getReferenceId)	 		//reference index must be found in seqdict
+			builder.setReferenceIndex(adamRecord.getReferenceId)	 		//  java.lang.IllegalArgumentException: Reference index 1 not found in sequence dictionary.
+			//what happens is that the reference index 1 can't be found, which means that the reference
+			//index is incorrect.
 			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v))
 			// builder.setReferenceName(adamRecord.getReferenceName)
 
-			System.out.println("before getStart")
+			// System.out.println("before getStart")
 			if (adamRecord.getStart != null) {
 				val start: Int = adamRecord.getStart.toInt		
 				println(start)
 				if (start!= 0) {
-					println(start)
-					builder.setAlignmentStart(start + 1) 					
+					// println("setting start: " + start)
+					builder.setAlignmentStart(start + 1) 	
+					// println("got: " + builder.getAlignmentStart)				
 				}
 			}
 
+			// println("mapq is: " + adamRecord.getMapq)
 			Option(adamRecord.getMapq).foreach(v => builder.setMappingQuality(v))
+			// println("got: " + builder.getMappingQuality)
 		}
 
 		// val mateReference: Int = adamRecord.getMateReferenceId		

@@ -102,10 +102,11 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   sparkTest("testing the fields in a converted ADAM Read") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("test")
-    adamRead.setReferenceId(0)
+    adamRead.setReferenceId(1)
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val sequence = "A" * 4
@@ -127,9 +128,12 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   sparkTest("creating simple adam read converting it back and forth") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("test")
+    adamRead.setReferenceId(1)
+
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
@@ -146,7 +150,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     System.out.println("intermediate mapq is: " + toSAM.getMappingQuality)
     System.out.println("end mapq is : " + backToADAM.getMapq)
     // assert(adamRead.getMapq == backToADAM.getMapq)
-    
+
     // System.out.println("initial mdtag is: " + adamRead.getMismatchingPositions)
     // System.out.println("intermediate mdtag is:" + toSAM.getAttribute("MD"))
     // System.out.println("end mdtag is: " + backToADAM.getMismatchingPositions)
