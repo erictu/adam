@@ -16,7 +16,7 @@
 package edu.berkeley.cs.amplab.adam.converters
 
 import org.broadinstitute.variant.variantcontext.{Allele, VariantContextBuilder, GenotypeBuilder}
-import edu.berkeley.cs.amplab.adam.avro.VariantType
+// import edu.berkeley.cs.amplab.adam.avro.VariantType
 import edu.berkeley.cs.amplab.adam.avro.ADAMRecord
 import scala.collection.JavaConverters._
 import edu.berkeley.cs.amplab.adam.models.{RecordGroupDictionary, SequenceDictionary, SequenceRecord}
@@ -103,6 +103,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("test")
     adamRead.setReferenceId(1)
+    adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
@@ -128,8 +129,8 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   sparkTest("creating simple adam read converting it back and forth") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("test")
-    adamRead.setReferenceId(1)
-
+    adamRead.setReferenceId(1)      //what's the point in this?
+    adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
@@ -151,17 +152,18 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     assert(adamRead.getCigar == backToADAM.getCigar)
     assert(adamRead.getSequence == backToADAM.getSequence)
     assert(adamRead.getQual == backToADAM.getQual)
-    assert(adamRead.getReferenceId == backToADAM.getReferenceId)
+    println("toSAM reference index is: " + toSAM.getReferenceIndex)
+    assert(adamRead.getReferenceId == backToADAM.getReferenceId) //referenceid/seqdict issue
     assert(adamRead.getReferenceName == backToADAM.getReferenceName)
     println("initial start is: " + adamRead.getStart)
     println("intermediate start is: " + toSAM.getAlignmentStart)
     println("end start is: " + backToADAM.getStart)
-    assert(adamRead.getStart == backToADAM.getStart)
+    assert(adamRead.getStart == backToADAM.getStart)      //also has to do with seqdict issue
 
     println("initial mapq is : " + adamRead.getMapq)
     println("intermediate mapq is: " + toSAM.getMappingQuality)
     println("end mapq is : " + backToADAM.getMapq)
-    assert(adamRead.getMapq == backToADAM.getMapq)
+    assert(adamRead.getMapq == backToADAM.getMapq)        //also has to do with seqdict issue
 
     assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
     assert(adamRead.getMateReference == backToADAM.getMateReference)

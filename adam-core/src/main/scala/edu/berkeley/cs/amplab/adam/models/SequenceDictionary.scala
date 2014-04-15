@@ -263,7 +263,7 @@ class SequenceDictionary(val recordsIn: Array[SequenceRecord]) extends Serializa
    *
    * @return Returns a SAM formatted sequence dictionary.
    */
-  def toSAMSequenceDictionary(): SAMSequenceDictionary = {
+  def toSAMSequenceDictionary(): SAMSequenceDictionary = {      //test this
     new SAMSequenceDictionary(recordsIn.map(_.toSAMSequenceRecord).toList)
   }
 
@@ -390,6 +390,7 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
    */
   def toSAMSequenceRecord (): SAMSequenceRecord = {
     val rec = new SAMSequenceRecord(name.toString, length.toInt)
+    println("setting sequence index in seqdict")
     rec.setSequenceIndex(id)      //ERIC added in, currently doesn't matter
 
     // NOTE: we should set the sam sequence record's id here, but, that is private inside of samtools - FAN, 2/5/2014

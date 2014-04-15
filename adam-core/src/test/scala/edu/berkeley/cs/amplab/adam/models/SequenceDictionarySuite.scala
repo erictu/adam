@@ -268,6 +268,21 @@ class SequenceDictionarySuite extends FunSuite {
     assert(asd("chr0").id === 0)
   }
 
+  test("convert from sam sequence dictionary and back") {
+    val sr0 = new SAMSequenceRecord("chr0", 1000)
+    println (sr0.getSequenceIndex)
+    val srs = List(sr0)
+
+    val ssd = new SAMSequenceDictionary(srs)
+
+    val asd = SequenceDictionary.fromSAMSequenceDictionary(ssd)
+
+    val toSSD = asd.toSAMSequenceDictionary
+
+    toSSD.assertSameDictionary(ssd)
+
+  }
+
   def record(id: Int, name: String, length: Int = 1000, url: String = null): SequenceRecord =
     SequenceRecord(id, name, length, url)
 
