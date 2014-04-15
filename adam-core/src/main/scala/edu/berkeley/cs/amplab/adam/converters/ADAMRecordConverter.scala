@@ -51,6 +51,7 @@ class ADAMRecordConverter extends Serializable {
 
 		// val readReference: Int = adamRecord.getReferenceId				
 		if (adamRecord.getReferenceId != null) {
+			println("About to set referenceIndex to :" + adamRecord.getReferenceId)
 			builder.setReferenceIndex(adamRecord.getReferenceId)	 		//  java.lang.IllegalArgumentException: Reference index 1 not found in sequence dictionary.
 			//what happens is that the reference index 1 can't be found, which means that the reference
 			//index is incorrect.

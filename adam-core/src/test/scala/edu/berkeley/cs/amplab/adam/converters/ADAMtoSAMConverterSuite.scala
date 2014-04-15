@@ -106,7 +106,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
-    println(dict)
+    // println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val sequence = "A" * 4
@@ -133,29 +133,63 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
-    println(dict)
+    // println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
+    assert(adamRead.getRecordGroupSequencingCenter == backToADAM.getRecordGroupSequencingCenter)
+    assert(adamRead.getRecordGroupRunDateEpoch == backToADAM.getRecordGroupRunDateEpoch)
+    assert(adamRead.getRecordGroupDescription == backToADAM.getRecordGroupDescription)
+    assert(adamRead.getRecordGroupFlowOrder == backToADAM.getRecordGroupFlowOrder)
+    assert(adamRead.getRecordGroupKeySequence == backToADAM.getRecordGroupKeySequence)
+    assert(adamRead.getRecordGroupLibrary == backToADAM.getRecordGroupLibrary)
+    assert(adamRead.getRecordGroupPredictedMedianInsertSize == backToADAM.getRecordGroupPredictedMedianInsertSize)
+    assert(adamRead.getRecordGroupPlatform == backToADAM.getRecordGroupPlatform)
+    assert(adamRead.getRecordGroupPlatformUnit == backToADAM.getRecordGroupPlatformUnit)
+    assert(adamRead.getRecordGroupSample == backToADAM.getRecordGroupSample)
     assert(adamRead.getReadName == backToADAM.getReadName)
     assert(adamRead.getCigar == backToADAM.getCigar)
     assert(adamRead.getSequence == backToADAM.getSequence)
     assert(adamRead.getQual == backToADAM.getQual)
-    System.out.println("initial start is: " + adamRead.getStart)
-    System.out.println("intermediate start is: " + toSAM.getAlignmentStart)
-    System.out.println("end start is: " + backToADAM.getStart)
-    // assert(adamRead.getStart == backToADAM.getStart)
+    assert(adamRead.getReferenceId == backToADAM.getReferenceId)
+    assert(adamRead.getReferenceName == backToADAM.getReferenceName)
+    println("initial start is: " + adamRead.getStart)
+    println("intermediate start is: " + toSAM.getAlignmentStart)
+    println("end start is: " + backToADAM.getStart)
+    assert(adamRead.getStart == backToADAM.getStart)
 
-    System.out.println("initial mapq is : " + adamRead.getMapq)
-    System.out.println("intermediate mapq is: " + toSAM.getMappingQuality)
-    System.out.println("end mapq is : " + backToADAM.getMapq)
-    // assert(adamRead.getMapq == backToADAM.getMapq)
+    println("initial mapq is : " + adamRead.getMapq)
+    println("intermediate mapq is: " + toSAM.getMappingQuality)
+    println("end mapq is : " + backToADAM.getMapq)
+    assert(adamRead.getMapq == backToADAM.getMapq)
+
+    assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
+    assert(adamRead.getMateReference == backToADAM.getMateReference)
+    assert(adamRead.getReadPaired == backToADAM.getReadPaired)
+    assert(adamRead.getMateNegativeStrand == backToADAM.getMateNegativeStrand)
+    assert(adamRead.getMateMapped == backToADAM.getMateMapped)
+    assert(adamRead.getProperPair == backToADAM.getProperPair)
+    assert(adamRead.getFirstOfPair == backToADAM.getFirstOfPair)
+    assert(adamRead.getSecondOfPair == backToADAM.getSecondOfPair)
+    assert(adamRead.getDuplicateRead == backToADAM.getDuplicateRead)
+    assert(adamRead.getReadNegativeStrand == backToADAM.getReadNegativeStrand)
+    assert(adamRead.getPrimaryAlignment == backToADAM.getPrimaryAlignment)
+    assert(adamRead.getFailedVendorQualityChecks == backToADAM.getFailedVendorQualityChecks)
+    assert(adamRead.getReadMapped == backToADAM.getReadMapped)
 
     // System.out.println("initial mdtag is: " + adamRead.getMismatchingPositions)
     // System.out.println("intermediate mdtag is:" + toSAM.getAttribute("MD"))
     // System.out.println("end mdtag is: " + backToADAM.getMismatchingPositions)
     assert(adamRead.getMismatchingPositions == backToADAM.getMismatchingPositions)
+    // assert(adamRead.getAttributes == backToADAM.getAttributes) 
 
+    //NOT PASSING FOLLOWING TESTS:
+    // assert(adamRead.getAttributes == backToADAM.getAttributes) 
+
+    //THE FOLLOWING ARE RELATED TO SEQUENCERECORD
+    // assert(adamRead.getMapq == backToADAM.getMapq)
+    // assert(adamRead.getStart == backToADAM.getStart)
+    // assert(adamRead.getReferenceId == backToADAM.getReferenceId)
 
 
  

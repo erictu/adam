@@ -390,7 +390,7 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
    */
   def toSAMSequenceRecord (): SAMSequenceRecord = {
     val rec = new SAMSequenceRecord(name.toString, length.toInt)
-    // rec.setSequenceIndex()      //ERIC added in
+    rec.setSequenceIndex(id)      //ERIC added in, currently doesn't matter
 
     // NOTE: we should set the sam sequence record's id here, but, that is private inside of samtools - FAN, 2/5/2014
 
