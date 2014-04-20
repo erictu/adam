@@ -34,14 +34,13 @@ class SAMRecordConverter extends Serializable {
     // Only set the reference information if the read is aligned, matching the mate reference
     // This prevents looking up a -1 in the sequence dictionary
     val readReference: Int = samRecord.getReferenceIndex
-    println("SAMRecord.NO_ALIGNMENT_REFERENCE_INDEX is: " + SAMRecord.NO_ALIGNMENT_REFERENCE_INDEX)
     println("In SAMRecordConverter, readReference is: " + readReference)
     if (readReference != SAMRecord.NO_ALIGNMENT_REFERENCE_INDEX) {
       builder
         .setReferenceId(readReference)
         .setReferenceName(samRecord.getReferenceName)
         .setReferenceLength(dict(samRecord.getReferenceIndex).length)
-        .setReferenceUrl(dict(samRecord.getReferenceIndex).url)
+        .setReferenceUrl(dict(samRecord.getReferenceIndex).url)   //key not found
 
       val start: Int = samRecord.getAlignmentStart
       println("In SAMRecordConverter, start is" + start)

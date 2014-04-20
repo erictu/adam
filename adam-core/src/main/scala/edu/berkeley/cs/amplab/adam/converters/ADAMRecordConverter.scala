@@ -58,15 +58,17 @@ class ADAMRecordConverter extends Serializable {
 			//what happens is that the reference index 1 can't be found, which means that the reference
 			//index is incorrect.
 			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v))
-				val name: String = adamRecord.getReferenceName	
-			println("setting referenceIndex to: " + header.getSequenceDictionary.getSequenceIndex(name))
+			//should I put this option stuff in an if statement?
+			val name: String = adamRecord.getReferenceName		
+			println("reference name is: " + name)
+			println("setting sequence index on index of : " + name + " to : " + header.getSequenceDictionary.getSequenceIndex(name))
 			builder.setReferenceIndex(header.getSequenceDictionary.getSequenceIndex(name))
-			// builder.setReferenceName(adamRecord.getReferenceName)
+			builder.setReferenceName(adamRecord.getReferenceName)
 
 			// System.out.println("before getStart")
 			if (adamRecord.getStart != null) {
 				val start: Int = adamRecord.getStart.toInt		
-				println(start)
+				// println("start is: " + start)
 				if (start!= 0) {
 					// println("setting start: " + start)
 					builder.setAlignmentStart(start + 1) 	

@@ -101,12 +101,12 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
   sparkTest("testing the fields in a converted ADAM Read") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
-    adamRead.setRecordGroupName("test")
-    adamRead.setReferenceId(1)
+    adamRead.setRecordGroupName("testname")
+    adamRead.setReferenceId(3)
     adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
-    val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    val dict = SequenceDictionary(SequenceRecord(9, "referencetest", 5, "test://chrom1"))
     // println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
@@ -119,7 +119,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     assert(toSAM.getReadNegativeStrandFlag == false)
     assert(toSAM.getMappingQuality == 60)
     assert(toSAM.getBaseQualityString == sequence)
-
+    assert(toSAM.getReferenceIndex == 1) //why must this be zero?
     // System.out.println("adamRead mdtag is: " + adamRead.getMismatchingPositions)
     // System.out.println("mdtag is:" + toSAM.getAttribute("MD"))
     assert(toSAM.getAttribute("MD") == "2^AAA2")
@@ -128,12 +128,12 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
   sparkTest("creating simple adam read converting it back and forth") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
-    adamRead.setRecordGroupName("test")
+    adamRead.setRecordGroupName("testname")
     adamRead.setReferenceId(1)      //what's the point in this?
     adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
-    val dict = SequenceDictionary(SequenceRecord(1, "1", 5, "test://chrom1"))
+    val dict = SequenceDictionary(SequenceRecord(1, "referencetest", 5, "test://chrom1"))
     // println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
