@@ -389,10 +389,10 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
    */
   def toSAMSequenceRecord (): SAMSequenceRecord = {
     val rec = new SAMSequenceRecord(name.toString, length.toInt)
-    println("sequencerecord id is :" + id)
-    println("sequencerecord name is : " + name)
+    println("SEQDICT: sequencerecord id is :" + id)
+    println("SEQDICT: sequencerecord name is : " + name)
     rec.setSequenceIndex(id)      //why is the id not being set? correctly
-    println("immediately after set is " + rec.getSequenceIndex())
+    println("SEQDICT: immediately after seting, index is: " + rec.getSequenceIndex())
 
     // NOTE: we should set the sam sequence record's id here, but, that is private inside of samtools - FAN, 2/5/2014
 
@@ -401,7 +401,7 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
       rec.setAssembly(url)
     }
     // println("id3 is :" + id)
-    println("this record is : " + rec)
+    println("SEQDICT: before returning this record is: " + rec)
     rec
   }
 }

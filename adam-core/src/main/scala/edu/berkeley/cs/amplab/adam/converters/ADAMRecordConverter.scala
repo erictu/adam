@@ -41,6 +41,8 @@ class ADAMRecordConverter extends Serializable {
 		Option(adamRecord.getRecordGroupPlatformUnit).foreach(v => readGroupFromADAM.setPlatformUnit(v))
 		Option(adamRecord.getRecordGroupSample).foreach(v => readGroupFromADAM.setSample(v))
 
+		println("ARC.CONVERT: before header dict is: " + dict.toSAMSequenceDictionary.getSequence(adamRecord.getReferenceName))
+
 		val header: SAMFileHeader = createSAMHeader(dict, readGroups, readGroupFromADAM)
 		val builder: SAMRecord = new SAMRecord(header)
 
@@ -51,7 +53,7 @@ class ADAMRecordConverter extends Serializable {
 
 		// val readReference: Int = adamRecord.getReferenceId				
 		if (adamRecord.getReferenceId != null) {
-			println("direct get referenceid is :" + adamRecord.getReferenceId)
+			println("ARC.CONVERT: direct get referenceid is :" + adamRecord.getReferenceId)
 			// builder.setReferenceIndex(adamRecord.getReferenceId)	 		//  java.lang.IllegalArgumentException: Reference index 1 not found in sequence dictionary.
 			
 
@@ -60,8 +62,8 @@ class ADAMRecordConverter extends Serializable {
 			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v))
 			//should I put this option stuff in an if statement?
 			val name: String = adamRecord.getReferenceName		
-			println("about to set reference name to : " + name)
-			println("about to set reference index to : "  + header.getSequenceDictionary.getSequenceIndex(name)) //The index for the given sequence name, or -1 if the name is not found.
+			println("ARC.CONVERT: about to set reference name to : " + name)
+			println("ARC.CONVERT: about to set reference index to : "  + header.getSequenceDictionary.getSequenceIndex(name)) //The index for the given sequence name, or -1 if the name is not found.
 			builder.setReferenceIndex(header.getSequenceDictionary.getSequenceIndex(name))
 			builder.setReferenceName(adamRecord.getReferenceName)
 
@@ -148,7 +150,7 @@ class ADAMRecordConverter extends Serializable {
 	def createSAMHeader(sd: SequenceDictionary, rgd: RecordGroupDictionary, rgfa: SAMReadGroupRecord): SAMFileHeader = {    
     	val samSequenceDictionary = sd.toSAMSequenceDictionary     //not doing it correct?  
     	// println("length of samSequenceDictionary is: " + samSequenceDictionary.getReferenceLength)
-    	println("sequence of samSequenceDictionary is " + samSequenceDictionary.getSequence("referencetest"))
+    	println("ARC.HEADER: sequence of samSequenceDictionary is " + samSequenceDictionary.getSequence("referencetest"))
       	val samHeader = new SAMFileHeader
       	samHeader.setSequenceDictionary(samSequenceDictionary)         
     	rgd.readGroups.foreach(kv=> {     
