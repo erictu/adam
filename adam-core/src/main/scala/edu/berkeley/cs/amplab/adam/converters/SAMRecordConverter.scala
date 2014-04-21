@@ -39,7 +39,7 @@ class SAMRecordConverter extends Serializable {
       builder
         .setReferenceId(readReference)
         .setReferenceName(samRecord.getReferenceName)
-        .setReferenceLength(dict(samRecord.getReferenceIndex).length)
+        .setReferenceLength(dict(samRecord.getReferenceIndex).length) //issue is her
         .setReferenceUrl(dict(samRecord.getReferenceIndex).url)   //key not found
 
       val start: Int = samRecord.getAlignmentStart

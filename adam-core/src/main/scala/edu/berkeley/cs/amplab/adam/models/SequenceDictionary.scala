@@ -363,7 +363,6 @@ object SequenceDictionary {
  * @param md5
  */
 class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val url: CharSequence, val md5: CharSequence) extends Serializable {
-
   assert(name != null, "SequenceRecord.name is null")
   assert(name.length > 0, "SequenceRecord.name has length 0")
   assert(length > 0, "SequenceRecord.length <= 0")
@@ -390,8 +389,10 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
    */
   def toSAMSequenceRecord (): SAMSequenceRecord = {
     val rec = new SAMSequenceRecord(name.toString, length.toInt)
-    println("setting sequence index in seqdict")
-    rec.setSequenceIndex(id)      //ERIC added in, currently doesn't matter
+    println("sequencerecord id is :" + id)
+    println("sequencerecord name is : " + name)
+    rec.setSequenceIndex(id)      //why is the id not being set? correctly
+    println("immediately after set is " + rec.getSequenceIndex())
 
     // NOTE: we should set the sam sequence record's id here, but, that is private inside of samtools - FAN, 2/5/2014
 
@@ -399,7 +400,8 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
     if (url != null) {
       rec.setAssembly(url)
     }
-
+    // println("id3 is :" + id)
+    println("this record is : " + rec)
     rec
   }
 }
