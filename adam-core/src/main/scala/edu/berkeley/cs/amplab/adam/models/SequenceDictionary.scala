@@ -265,7 +265,7 @@ class SequenceDictionary(val recordsIn: Array[SequenceRecord]) extends Serializa
    */
   def toSAMSequenceDictionary(): SAMSequenceDictionary = {      //test this
     val toSAMSeqDict = new SAMSequenceDictionary(recordsIn.map(_.toSAMSequenceRecord).toList)
-    recordsIn.foreach(r => toSAMSeqDict.getSequence(r.name).setSequenceIndex(r.id))
+    recordsIn.foreach(r => toSAMSeqDict.getSequence(r.name).setSequenceIndex(r.id)) //constructor for SAMSequenceDictionary gets rid of the indices
     toSAMSeqDict
   }
 
@@ -391,10 +391,10 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
    */
   def toSAMSequenceRecord (): SAMSequenceRecord = {
     val rec = new SAMSequenceRecord(name.toString, length.toInt)
-    println("SEQDICT: sequencerecord id is :" + id)
-    println("SEQDICT: sequencerecord name is : " + name)
-    rec.setSequenceIndex(id)      //why is the id not being set? correctly
-    println("SEQDICT: immediately after seting, index is: " + rec.getSequenceIndex())
+    // println("SEQDICT: sequencerecord id is :" + id)
+    // println("SEQDICT: sequencerecord name is : " + name)
+    rec.setSequenceIndex(id)      
+    // println("SEQDICT: immediately after seting, index is: " + rec.getSequenceIndex())
 
     // NOTE: we should set the sam sequence record's id here, but, that is private inside of samtools - FAN, 2/5/2014
 
@@ -403,7 +403,7 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
       rec.setAssembly(url)
     }
     // println("id3 is :" + id)
-    println("SEQDICT: before returning this record is: " + rec)
+    // println("SEQDICT: before returning this record is: " + rec)
     rec
   }
 }
