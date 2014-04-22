@@ -59,7 +59,11 @@ class ADAMRecordConverter extends Serializable {
 
 			//what happens is that the reference index 1 can't be found, which means that the reference
 			//index is incorrect.
-			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v))
+			println("ARC.CONVERT: before setting reference name header dict is : " + header.getSequenceDictionary)
+			println("ARC.CONVERT: before setting reference name header read is : "  + header.getSequenceDictionary.getSequence(adamRecord.getReferenceName))
+			println("ARC.CONVERT: before setting reference name builder dict is : " + builder.getHeader().getSequenceDictionary)
+			println("ARC.CONVERT: before setting reference name builder read is : "  + builder.getHeader().getSequenceDictionary.getSequence(adamRecord.getReferenceName))
+			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v)) //error here
 			//should I put this option stuff in an if statement?
 			val name: String = adamRecord.getReferenceName		
 			println("ARC.CONVERT: about to set reference name to : " + name)
@@ -151,6 +155,7 @@ class ADAMRecordConverter extends Serializable {
     	val samSequenceDictionary = sd.toSAMSequenceDictionary     //not doing it correct?  
     	// println("length of samSequenceDictionary is: " + samSequenceDictionary.getReferenceLength)
     	println("ARC.HEADER: sequence of samSequenceDictionary is " + samSequenceDictionary.getSequence("referencetest"))
+      	println("ARC>HEADER: sd is : " + sd)
       	val samHeader = new SAMFileHeader
       	samHeader.setSequenceDictionary(samSequenceDictionary)         
     	rgd.readGroups.foreach(kv=> {     
