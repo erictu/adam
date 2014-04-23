@@ -74,13 +74,14 @@ class ADAMRecordConverter extends Serializable {
 			// println("ARC.CONVERT: header sequence name is: "+ header.getSequence(1)) //error because it's null
 			// println("ARC.CONVERT: header sequence name is: "+ header.getSequence(1).getSequenceName) //error because it's null
 
-			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v)) //error here
+			//this also sets the index when it's setting the name
+			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v)) //error here because the index must be in range or it returns null
 
-			val name: String = adamRecord.getReferenceName		
-			println("ARC.CONVERT: about to set reference name to : " + name)
-			println("ARC.CONVERT: about to set reference index to : "  + header.getSequenceDictionary.getSequenceIndex(name)) //The index for the given sequence name, or -1 if the name is not found.
-			builder.setReferenceIndex(header.getSequenceDictionary.getSequenceIndex(name))
-			builder.setReferenceName(adamRecord.getReferenceName)
+			// val name: String = adamRecord.getReferenceName		
+			// println("ARC.CONVERT: about to set reference name to : " + name)
+			// println("ARC.CONVERT: about to set reference index to : "  + header.getSequenceDictionary.getSequenceIndex(name)) //The index for the given sequence name, or -1 if the name is not found.
+			// builder.setReferenceIndex(header.getSequenceDictionary.getSequenceIndex(name))
+			// builder.setReferenceName(adamRecord.getReferenceName)
 
 			// System.out.println("before getStart")
 			if (adamRecord.getStart != null) {

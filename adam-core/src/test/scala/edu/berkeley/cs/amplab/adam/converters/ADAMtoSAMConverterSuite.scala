@@ -102,7 +102,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   sparkTest("testing the fields in a converted ADAM Read") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
-    adamRead.setReferenceId(0)      //does this need to match with the seq record 9?
+    adamRead.setReferenceId(0)      //needs to match sequence record index
     adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
@@ -129,7 +129,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   sparkTest("testing the fields in a converted ADAM Read with larger SequenceDictionary") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
-    adamRead.setReferenceId(0)      //does this need to match with the seq record 9?
+    adamRead.setReferenceId(0)      //needs to match sequence record index
     adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
@@ -158,7 +158,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   sparkTest("creating simple adam read converting it back and forth") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
-    adamRead.setReferenceId(0)      //what's the point in this?
+    adamRead.setReferenceId(0)      //needs to be same as sequence record index
     adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
@@ -181,18 +181,18 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     assert(adamRead.getCigar == backToADAM.getCigar)
     assert(adamRead.getSequence == backToADAM.getSequence)
     assert(adamRead.getQual == backToADAM.getQual)
-    println("toSAM reference index is: " + toSAM.getReferenceIndex)
-    assert(adamRead.getReferenceId == backToADAM.getReferenceId) //referenceid/seqdict issue
+    // println("toSAM reference index is: " + toSAM.getReferenceIndex)
+    assert(adamRead.getReferenceId == backToADAM.getReferenceId) 
     assert(adamRead.getReferenceName == backToADAM.getReferenceName)
-    println("initial start is: " + adamRead.getStart)
-    println("intermediate start is: " + toSAM.getAlignmentStart)
-    println("end start is: " + backToADAM.getStart)
-    assert(adamRead.getStart == backToADAM.getStart)      //also has to do with seqdict issue
+    // println("initial start is: " + adamRead.getStart)
+    // println("intermediate start is: " + toSAM.getAlignmentStart)
+    // println("end start is: " + backToADAM.getStart)
+    assert(adamRead.getStart == backToADAM.getStart)      
 
-    println("initial mapq is : " + adamRead.getMapq)
-    println("intermediate mapq is: " + toSAM.getMappingQuality)
-    println("end mapq is : " + backToADAM.getMapq)
-    assert(adamRead.getMapq == backToADAM.getMapq)        //also has to do with seqdict issue
+    // println("initial mapq is : " + adamRead.getMapq)
+    // println("intermediate mapq is: " + toSAM.getMappingQuality)
+    // println("end mapq is : " + backToADAM.getMapq)
+    assert(adamRead.getMapq == backToADAM.getMapq)        
 
     assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
     assert(adamRead.getMateReference == backToADAM.getMateReference)
@@ -223,7 +223,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     sparkTest("creating simple adam read converting it back and forth with larger seqdict") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
-    adamRead.setReferenceId(0)      //what's the point in this?
+    adamRead.setReferenceId(0)      //must match sequence record index
     adamRead.setReferenceName("referencetest")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
@@ -246,18 +246,18 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     assert(adamRead.getCigar == backToADAM.getCigar)
     assert(adamRead.getSequence == backToADAM.getSequence)
     assert(adamRead.getQual == backToADAM.getQual)
-    println("toSAM reference index is: " + toSAM.getReferenceIndex)
-    assert(adamRead.getReferenceId == backToADAM.getReferenceId) //referenceid/seqdict issue
+    // println("toSAM reference index is: " + toSAM.getReferenceIndex)
+    assert(adamRead.getReferenceId == backToADAM.getReferenceId) 
     assert(adamRead.getReferenceName == backToADAM.getReferenceName)
-    println("initial start is: " + adamRead.getStart)
-    println("intermediate start is: " + toSAM.getAlignmentStart)
-    println("end start is: " + backToADAM.getStart)
-    assert(adamRead.getStart == backToADAM.getStart)      //also has to do with seqdict issue
+    // println("initial start is: " + adamRead.getStart)
+    // println("intermediate start is: " + toSAM.getAlignmentStart)
+    // println("end start is: " + backToADAM.getStart)
+    assert(adamRead.getStart == backToADAM.getStart)      
 
-    println("initial mapq is : " + adamRead.getMapq)
-    println("intermediate mapq is: " + toSAM.getMappingQuality)
-    println("end mapq is : " + backToADAM.getMapq)
-    assert(adamRead.getMapq == backToADAM.getMapq)        //also has to do with seqdict issue
+    // println("initial mapq is : " + adamRead.getMapq)
+    // println("intermediate mapq is: " + toSAM.getMappingQuality)
+    // println("end mapq is : " + backToADAM.getMapq)
+    assert(adamRead.getMapq == backToADAM.getMapq)        
 
     assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
     assert(adamRead.getMateReference == backToADAM.getMateReference)
