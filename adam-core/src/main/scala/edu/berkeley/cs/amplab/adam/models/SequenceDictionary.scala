@@ -391,19 +391,12 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
    */
   def toSAMSequenceRecord (): SAMSequenceRecord = {
     val rec = new SAMSequenceRecord(name.toString, length.toInt)
-    // println("SEQDICT: sequencerecord id is :" + id)
-    // println("SEQDICT: sequencerecord name is : " + name)
-    rec.setSequenceIndex(id)      
-    // println("SEQDICT: immediately after seting, index is: " + rec.getSequenceIndex())
-
     // NOTE: we should set the sam sequence record's id here, but, that is private inside of samtools - FAN, 2/5/2014
 
     // if url is defined, set it
     if (url != null) {
       rec.setAssembly(url)
     }
-    // println("id3 is :" + id)
-    // println("SEQDICT: before returning this record is: " + rec)
     rec
   }
 }

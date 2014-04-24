@@ -20,10 +20,10 @@ import net.sf.samtools.{SAMReadGroupRecord, SAMRecord}
 import edu.berkeley.cs.amplab.adam.avro.ADAMRecord
 import scala.collection.JavaConverters._
 import edu.berkeley.cs.amplab.adam.models.{RecordGroupDictionary, SequenceDictionary}
-import edu.berkeley.cs.amplab.adam.rdd.AdamContext._ 	//added this in
+import edu.berkeley.cs.amplab.adam.rdd.AdamContext._ 	
 import net.sf.samtools.SAMFileHeader
 import edu.berkeley.cs.amplab.adam.rich.RichADAMRecord
-import edu.berkeley.cs.amplab.adam.models.Attribute 	//added this in
+import edu.berkeley.cs.amplab.adam.models.Attribute 	
 import java.util.Date 
 
 class ADAMRecordConverter extends Serializable {
@@ -41,65 +41,27 @@ class ADAMRecordConverter extends Serializable {
 		Option(adamRecord.getRecordGroupPlatformUnit).foreach(v => readGroupFromADAM.setPlatformUnit(v))
 		Option(adamRecord.getRecordGroupSample).foreach(v => readGroupFromADAM.setSample(v))
 
-		// println("ARC.CONVERT: before header dict is: " + dict.toSAMSequenceDictionary.getSequence(adamRecord.getReferenceName))
-
 		val header: SAMFileHeader = createSAMHeader(dict, readGroups, readGroupFromADAM)
 		val builder: SAMRecord = new SAMRecord(header)
 
 		builder.setReadName(adamRecord.getReadName.toString) 
 		builder.setReadString(adamRecord.getSequence)	
-		builder.setCigarString(adamRecord.getCigar) 		//should I be setting the cigar?
+		builder.setCigarString(adamRecord.getCigar) 		
 		builder.setBaseQualityString(adamRecord.getQual)	
-
-		// val readReference: Int = adamRecord.getReferenceId				
+				
 		if (adamRecord.getReferenceId != null) {
-			// println("ARC.CONVERT: direct get referenceid is :" + adamRecord.getReferenceId)
-			// builder.setReferenceIndex(adamRecord.getReferenceId)	 		//  java.lang.IllegalArgumentException: Reference index 1 not found in sequence dictionary.
-			
-
-			//what happens is that the reference index 1 can't be found, which means that the reference
-			//index is incorrect.
-			// println("ARC.CONVERT: before setting reference name header dict is : " + header.getSequenceDictionary)
-			// println("ARC.CONVERT: before setting reference name header read is : "  + header.getSequenceDictionary.getSequence(adamRecord.getReferenceName))
-			// println("ARC.CONVERT: before setting reference name builder dict is : " + builder.getHeader().getSequenceDictionary)
-			// println("ARC.CONVERT: before setting reference name builder read is : "  + builder.getHeader().getSequenceDictionary.getSequence(adamRecord.getReferenceName))
-			//should I put this option stuff in an if statement?
-			println("ARC.CONVERT: header sequence index is: " + header.getSequenceIndex(adamRecord.getReferenceName)) //is 9
-			println("ARC.CONVERT: header sequence from name is: " + header.getSequence(adamRecord.getReferenceName)) //works
-			println("ARC.CONVERT: dict is: " + header.getSequenceDictionary)
-			println("ARC.CONVERT: dict sequences are : " + header.getSequenceDictionary.getSequences)
-			println("ARC.CONVERT: header sequence from index is: " + header.getSequenceDictionary.getSequence(0))
-			println("ARC.CONVERT: header sequence from index is: " + header.getSequence(0)) //header sequence is null
-			println("ARC.CONVERT: header sequence name is: "+ header.getSequence(0).getSequenceName) //error because it's null
-			// println("ARC.CONVERT: header sequence name is: "+ header.getSequence(1)) //error because it's null
-			// println("ARC.CONVERT: header sequence name is: "+ header.getSequence(1).getSequenceName) //error because it's null
-
 			//this also sets the index when it's setting the name
-			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v)) //error here because the index must be in range or it returns null
+			Option(adamRecord.getReferenceName).foreach(v => builder.setReferenceName(v)) 
 
-			// val name: String = adamRecord.getReferenceName		
-			// println("ARC.CONVERT: about to set reference name to : " + name)
-			// println("ARC.CONVERT: about to set reference index to : "  + header.getSequenceDictionary.getSequenceIndex(name)) //The index for the given sequence name, or -1 if the name is not found.
-			// builder.setReferenceIndex(header.getSequenceDictionary.getSequenceIndex(name))
-			// builder.setReferenceName(adamRecord.getReferenceName)
-
-			// System.out.println("before getStart")
 			if (adamRecord.getStart != null) {
 				val start: Int = adamRecord.getStart.toInt		
-				// println("start is: " + start)
 				if (start!= 0) {
-					// println("setting start: " + start)
-					builder.setAlignmentStart(start + 1) 	
-					// println("got: " + builder.getAlignmentStart)				
+					builder.setAlignmentStart(start + 1) 			
 				}
 			}
-
-			// println("mapq is: " + adamRecord.getMapq)
 			Option(adamRecord.getMapq).foreach(v => builder.setMappingQuality(v))
-			// println("got: " + builder.getMappingQuality)
 		}
-
-		// val mateReference: Int = adamRecord.getMateReferenceId		
+	
 		if (adamRecord.getMateReferenceId != null) {
 			builder.setMateReferenceIndex(adamRecord.getMateReferenceId)
 			builder.setMateReferenceName(adamRecord.getMateReference)		
@@ -110,7 +72,6 @@ class ADAMRecordConverter extends Serializable {
 			}
 
 		}
-
 				
 		if (adamRecord.getReadPaired) {
 			builder.setReadPairedFlag(true)										
@@ -145,29 +106,20 @@ class ADAMRecordConverter extends Serializable {
 		if (!adamRecord.getReadMapped) {
 			builder.setReadUnmappedFlag(true)				
 		}
-
-		// println("I'm right before adamRecord.getAttributes")
-		// println("adamRecord.getAttributes is: " + adamRecord.getAttributes)
 		if (adamRecord.getMismatchingPositions != null) {		
-			// println("about to set MD tag")
 			builder.setAttribute("MD", adamRecord.getMismatchingPositions)
 		}
 		if (adamRecord.getAttributes != null) {				
 			val mp = RichADAMRecord(adamRecord).tags		
-			// println("Now I'm here")
 			mp.foreach(a => { 		
 					builder.setAttribute(a.tag, a.value)
 			})
 		}
-
 		builder
 	}
 
 	def createSAMHeader(sd: SequenceDictionary, rgd: RecordGroupDictionary, rgfa: SAMReadGroupRecord): SAMFileHeader = {    
-    	val samSequenceDictionary = sd.toSAMSequenceDictionary     //not doing it correct?  
-    	// println("length of samSequenceDictionary is: " + samSequenceDictionary.getReferenceLength)
-    	// println("ARC.HEADER: sequence of samSequenceDictionary is " + samSequenceDictionary.getSequence("referencetest"))
-     //  	println("ARC.HEADER: sd is : " + sd)
+    	val samSequenceDictionary = sd.toSAMSequenceDictionary  
       	val samHeader = new SAMFileHeader
       	samHeader.setSequenceDictionary(samSequenceDictionary)         
     	rgd.readGroups.foreach(kv=> {     
@@ -177,7 +129,7 @@ class ADAMRecordConverter extends Serializable {
       			samHeader.addReadGroup(nextMember) 
       		}
   		})
-  		samHeader.addReadGroup(rgfa)		//adds in SAMReadGroupRecord from ADAM RecordGroup
+  		samHeader.addReadGroup(rgfa)		
 
   		samHeader
     }
