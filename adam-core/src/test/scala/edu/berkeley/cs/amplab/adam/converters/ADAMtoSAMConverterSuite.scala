@@ -155,15 +155,16 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
   }
 
-  sparkTest("creating simple adam read converting it back and forth") {
+  sparkTest("creating simple adam read converting it back and forth with seqdict of 1") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
     adamRead.setReferenceId(0)      //needs to be same as sequence record index
     adamRead.setReferenceName("referencetest")
+    adamRead.setReferenceLength(5)
+    adamRead.setReferenceUrl("test://chrom1")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(0, "referencetest", 5, "test://chrom1"))
-    // println(dict)
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
@@ -182,8 +183,11 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     assert(adamRead.getSequence == backToADAM.getSequence)
     assert(adamRead.getQual == backToADAM.getQual)
     // println("toSAM reference index is: " + toSAM.getReferenceIndex)
+
     assert(adamRead.getReferenceId == backToADAM.getReferenceId) 
     assert(adamRead.getReferenceName == backToADAM.getReferenceName)
+    assert(adamRead.getReferenceLength == backToADAM.getReferenceLength)
+    assert(adamRead.getReferenceUrl == backToADAM.getReferenceUrl)
     // println("initial start is: " + adamRead.getStart)
     // println("intermediate start is: " + toSAM.getAlignmentStart)
     // println("end start is: " + backToADAM.getStart)
@@ -220,11 +224,13 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
  
   }
-    sparkTest("creating simple adam read converting it back and forth with larger seqdict") {
+    sparkTest("creating simple adam read converting it back and forth with seqdict of 2") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
-    adamRead.setReferenceId(0)      //must match sequence record index
-    adamRead.setReferenceName("referencetest")
+    adamRead.setReferenceId(1)      //must match sequence record index
+    adamRead.setReferenceName("referencetest1")
+    adamRead.setReferenceLength(4)
+    adamRead.setReferenceUrl("test://chrom2")
     val adamRecordConverter = new ADAMRecordConverter
     val samRecordConverter = new SAMRecordConverter
     val dict = SequenceDictionary(SequenceRecord(0, "referencetest", 5, "test://chrom1"),
@@ -249,6 +255,8 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     // println("toSAM reference index is: " + toSAM.getReferenceIndex)
     assert(adamRead.getReferenceId == backToADAM.getReferenceId) 
     assert(adamRead.getReferenceName == backToADAM.getReferenceName)
+    assert(adamRead.getReferenceLength == backToADAM.getReferenceLength)
+    assert(adamRead.getReferenceUrl == backToADAM.getReferenceUrl)
     // println("initial start is: " + adamRead.getStart)
     // println("intermediate start is: " + toSAM.getAlignmentStart)
     // println("end start is: " + backToADAM.getStart)
@@ -284,6 +292,63 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
 
 
  
+  }
+    sparkTest("creating simple adam read converting it back and forth with seqdict of 3") {
+    val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
+    adamRead.setRecordGroupName("testname")
+    //the four fields below must match the fields in the specified SequenceRecord
+    adamRead.setReferenceId(2)      //must match sequence record index
+    adamRead.setReferenceName("referencetest2")
+    adamRead.setReferenceLength(7)
+    adamRead.setReferenceUrl("test://chrom3")
+    val adamRecordConverter = new ADAMRecordConverter
+    val samRecordConverter = new SAMRecordConverter
+    val dict = SequenceDictionary(SequenceRecord(0, "referencetest", 5, "test://chrom1"),
+      SequenceRecord(1, "referencetest1", 4, "test://chrom2"), 
+      SequenceRecord(2, "referencetest2", 7, "test://chrom3"))
+    val readGroups = new RecordGroupDictionary(Seq("testing"))
+    val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
+    val backToADAM = samRecordConverter.convert(toSAM, dict, readGroups)
+    assert(adamRead.getRecordGroupSequencingCenter == backToADAM.getRecordGroupSequencingCenter)
+    assert(adamRead.getRecordGroupRunDateEpoch == backToADAM.getRecordGroupRunDateEpoch)
+    assert(adamRead.getRecordGroupDescription == backToADAM.getRecordGroupDescription)
+    assert(adamRead.getRecordGroupFlowOrder == backToADAM.getRecordGroupFlowOrder)
+    assert(adamRead.getRecordGroupKeySequence == backToADAM.getRecordGroupKeySequence)
+    assert(adamRead.getRecordGroupLibrary == backToADAM.getRecordGroupLibrary)
+    assert(adamRead.getRecordGroupPredictedMedianInsertSize == backToADAM.getRecordGroupPredictedMedianInsertSize)
+    assert(adamRead.getRecordGroupPlatform == backToADAM.getRecordGroupPlatform)
+    assert(adamRead.getRecordGroupPlatformUnit == backToADAM.getRecordGroupPlatformUnit)
+    assert(adamRead.getRecordGroupSample == backToADAM.getRecordGroupSample)
+    assert(adamRead.getReadName == backToADAM.getReadName)
+    assert(adamRead.getCigar == backToADAM.getCigar)
+    assert(adamRead.getSequence == backToADAM.getSequence)
+    assert(adamRead.getQual == backToADAM.getQual)
+    // println("TEST: reference name is: " + adamRead.getReferenceName)    //just the first one that we specify
+    // println("TEST: reference id is : " + adamRead.getReferenceId)       //what about referencelegnth and url
+    assert(adamRead.getReferenceId == backToADAM.getReferenceId) 
+    assert(adamRead.getReferenceName == backToADAM.getReferenceName)
+    // println("TEST: reference length is : " + adamRead.getReferenceLength)
+    // println("TEST: reference length is : " + backToADAM.getReferenceLength)
+    assert(adamRead.getReferenceLength == backToADAM.getReferenceLength)
+    // println("TEST: reference url is : " + adamRead.getReferenceUrl)
+    // println("TEST: reference url is : " + backToADAM.getReferenceUrl)
+    assert(adamRead.getReferenceUrl == backToADAM.getReferenceUrl)
+    assert(adamRead.getStart == backToADAM.getStart)      
+    assert(adamRead.getMapq == backToADAM.getMapq)        
+    assert(adamRead.getMateReferenceId == backToADAM.getMateReferenceId)
+    assert(adamRead.getMateReference == backToADAM.getMateReference)
+    assert(adamRead.getReadPaired == backToADAM.getReadPaired)
+    assert(adamRead.getMateNegativeStrand == backToADAM.getMateNegativeStrand)
+    assert(adamRead.getMateMapped == backToADAM.getMateMapped)
+    assert(adamRead.getProperPair == backToADAM.getProperPair)
+    assert(adamRead.getFirstOfPair == backToADAM.getFirstOfPair)
+    assert(adamRead.getSecondOfPair == backToADAM.getSecondOfPair)
+    assert(adamRead.getDuplicateRead == backToADAM.getDuplicateRead)
+    assert(adamRead.getReadNegativeStrand == backToADAM.getReadNegativeStrand)
+    assert(adamRead.getPrimaryAlignment == backToADAM.getPrimaryAlignment)
+    assert(adamRead.getFailedVendorQualityChecks == backToADAM.getFailedVendorQualityChecks)
+    assert(adamRead.getReadMapped == backToADAM.getReadMapped)
+    assert(adamRead.getMismatchingPositions == backToADAM.getMismatchingPositions)
   }
 
 }
