@@ -19,7 +19,7 @@ import fi.tkk.ics.hadoop.bam.{KeyIgnoringBAMOutputFormat, KeyIgnoringAnySAMOutpu
 import net.sf.samtools.SAMFileHeader
 
 
-object AdamSAMOutputFormat {
+object ADAMSAMOutputFormat {
 
   private[util] var header: Option[SAMFileHeader] = None
 
@@ -58,14 +58,16 @@ object AdamSAMOutputFormat {
   }
 }
 
-// class AdamSAMOutputFormat[K]
-//   extends KeyIgnoringBAMOutputFormat[K]{
+
+//ERIC: Why does this take forever:
+class ADAMSAMOutputFormat[K]
+  extends KeyIgnoringBAMOutputFormat[K]{
+
+  setSAMHeader(ADAMSAMOutputFormat.getHeader)
+}
+
+// class ADAMSAMOutputFormat[K]
+//   extends KeyIgnoringAnySAMOutputFormat[K](SAMFormat.valueOf("SAM")) {
 
 //   setSAMHeader(AdamSAMOutputFormat.getHeader)
 // }
-
-class AdamSAMOutputFormat[K]
-  extends KeyIgnoringAnySAMOutputFormat[K](SAMFormat.valueOf("SAM")) {
-
-  setSAMHeader(AdamSAMOutputFormat.getHeader)
-}

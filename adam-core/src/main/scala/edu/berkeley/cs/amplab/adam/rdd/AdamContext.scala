@@ -349,6 +349,24 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
 
     sc.union(remap(paths.map(loadAdams)))
   }
+
+  //ERIC ADDED THIS FOR USE IN ADAM2SAM
+  def adamSAMSave(filePath: String, records: RDD[ADAMRecord]) = {
+
+
+    // ADAMSAMOutputformat.setHeader() //WHERE/HOW DO I DO THIS
+    val converter = new ADAMRecordConverter
+    val convertRecords: RDD[SAMRecord] = records.map(v => {
+      val dict = v.adamGetSequenceDictionary
+      val readGroups = v.getReadGroupDictionary
+      converter.convert(v, dict, readGroups)
+      records
+      })
+    val conf = sc.hadoopConfiguration     //ERIC: here to input sc? put this in adamContext?
+    sc.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[Adam2SAM], conf) //key, value, output format
+
+  }
+
 }
 
 
