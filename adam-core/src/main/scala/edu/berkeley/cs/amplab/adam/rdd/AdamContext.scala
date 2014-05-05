@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 package edu.berkeley.cs.amplab.adam.rdd
-
 import edu.berkeley.cs.amplab.adam.avro.{ADAMPileup, 
                                          ADAMRecord,
                                          ADAMNucleotideContigFragment}
-import edu.berkeley.cs.amplab.adam.converters.SAMRecordConverter
+import edu.berkeley.cs.amplab.adam.converters.{SAMRecordConverter,
+                                                ADAMRecordConverter}
 import edu.berkeley.cs.amplab.adam.models._
 import edu.berkeley.cs.amplab.adam.models.ADAMRod
 import edu.berkeley.cs.amplab.adam.projections.{ADAMRecordField,
@@ -47,6 +47,8 @@ import parquet.hadoop.util.ContextUtil
 import scala.Some
 import scala.collection.JavaConversions._
 import scala.collection.Map
+import net.sf.samtools.{SAMReadGroupRecord, SAMRecord}
+
 
 
 object AdamContext {
@@ -356,15 +358,20 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
 
     // ADAMSAMOutputformat.setHeader() //WHERE/HOW DO I DO THIS
     val converter = new ADAMRecordConverter
+    val dict = records.adamGetSequenceDictionary //value adamGetSequenceDictionary is not a member of org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
+    val readGroups = records.getReadGroupDictionary
     val convertRecords: RDD[SAMRecord] = records.map(v => {
-      val dict = v.adamGetSequenceDictionary
-      val readGroups = v.getReadGroupDictionary
+      // val dict = v.adamGetSequenceDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
+      // val readGroups = v.getReadGroupDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
       converter.convert(v, dict, readGroups)
       records
+        // found   : org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
+        // required: net.sf.samtools.SAMRecord
+
       })
     val conf = sc.hadoopConfiguration     //ERIC: here to input sc? put this in adamContext?
     sc.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[Adam2SAM], conf) //key, value, output format
-
+      //not a member of sparkcontext
   }
 
 }
