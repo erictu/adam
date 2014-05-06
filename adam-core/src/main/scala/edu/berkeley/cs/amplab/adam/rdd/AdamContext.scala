@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package edu.berkeley.cs.amplab.adam.rdd
+import edu.berkeley.cs.amplab.adam.util.ADAMSAMOutputFormat
 import edu.berkeley.cs.amplab.adam.avro.{ADAMPileup, 
                                          ADAMRecord,
                                          ADAMNucleotideContigFragment}
@@ -38,6 +39,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.StatsReportListener
 import parquet.avro.{AvroParquetInputFormat, AvroReadSupport}
@@ -143,6 +145,8 @@ object AdamContext {
     sc
   }
 }
+
+import AdamContext._
 
 class AdamContext(sc: SparkContext) extends Serializable with Logging {
 
@@ -353,10 +357,10 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
   }
 
   //ERIC ADDED THIS FOR USE IN ADAM2SAM
-  def adamSAMSave(filePath: String, records: RDD[ADAMRecord]) = {
+  def adamSAMSave(filePath: String, records: RDD[ADAMRecord], asSam: Boolean = true) = {
 
 
-    // ADAMSAMOutputformat.setHeader() //WHERE/HOW DO I DO THIS
+    // ADAMSAMOutputFormat.setHeader() //WHERE/HOW DO I DO THIS
     val converter = new ADAMRecordConverter
     val dict = records.adamGetSequenceDictionary //value adamGetSequenceDictionary is not a member of org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
     val readGroups = records.getReadGroupDictionary
@@ -364,16 +368,22 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
       // val dict = v.adamGetSequenceDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
       // val readGroups = v.getReadGroupDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
       converter.convert(v, dict, readGroups)
-      records //not converting
+      // records //not converting
         // found   : org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
         // required: net.sf.samtools.SAMRecord
 
       })
     val conf = sc.hadoopConfiguration     //ERIC: here to input sc? put this in adamContext?
     //how do I put this as a key value thing?
+    
     val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
-    withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[Adam2SAM], conf) //key, value, output format
-      //not a member of sparkcontext
+    asSam match {
+      case true => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMSAMOutputFormat[LongWritable]], conf) 
+      case false => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMBAMOutputFormat[LongWritable]], conf) 
+    }
+
+    // val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
+    // withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMSAMOutputFormat[LongWritable]], conf) 
   }
 
 }

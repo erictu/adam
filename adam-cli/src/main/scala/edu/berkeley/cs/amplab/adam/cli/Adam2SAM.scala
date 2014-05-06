@@ -18,7 +18,7 @@ package edu.berkeley.cs.amplab.adam.cli
 
 import edu.berkeley.cs.amplab.adam.avro.ADAMGenotype
 import edu.berkeley.cs.amplab.adam.avro.ADAMRecord
-import edu.berkeley.cs.amplab.adam.util.ADAMSAMOutputformat
+import edu.berkeley.cs.amplab.adam.util.ADAMSAMOutputFormat
 import net.sf.samtools.{SAMReadGroupRecord, SAMRecord}
 import edu.berkeley.cs.amplab.adam.rdd.AdamContext._
 import edu.berkeley.cs.amplab.adam.rdd.variation.ADAMVariationContext._
@@ -53,45 +53,7 @@ class Adam2SAM(val args: Adam2SAMArgs) extends AdamSparkCommand[Adam2SAMArgs] wi
 
   def run(sc: SparkContext, job: Job) {
     val adamRecords: RDD[ADAMRecord] = sc.adamLoad(args.adamFile)
-    sc.adamSAMSave(args.outputPath, adamRecords)  //ERROR
-  }
-
-  def ADAMSAMSave(filePath: String, records: RDD[ADAMRecord]) = {
-    // val vcfFormat = VCFFormat.inferFromFilePath(filePath)
-    // assert(vcfFormat == VCFFormat.VCF, "BCF not yet supported") // TODO: Add BCF support
-
-    // log.info("Writing %s file to %s".format(vcfFormat, filePath))
-
-    // // Initialize global header object required by Hadoop VCF Writer
-    // ADAMVCFOutputFormat.setHeader(variants.adamGetCallsetSamples)
-    adamSAMOutputformat.setHeader()
-    val converter = new ADAMRecordConverter
-    val convertRecords: RDD[SAMRecord] = records.map(v => {
-      val dict = v.adamGetSequenceDictionary
-      val readGroups = v.getReadGroupDictionary
-      converter.convert(v, dict, readGroups)
-      records
-      })
-    val conf = sc.hadoopConfiguration     //ERIC: here to input sc? put this in adamContext?
-    sc.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[Adam2SAM], conf) //key, value, output format
-
-    // // TODO: Sort variants according to sequence dictionary (if supplied)
-    // val converter = new VariantContextConverter(dict)
-    // val gatkVCs: RDD[VariantContextWritable] = variants.map(v => {
-    //   val vcw = new VariantContextWritable
-    //   vcw.set(converter.convert(v))
-    //   vcw
-    // })
-    // val withKey = gatkVCs.keyBy(v => new LongWritable(v.get.getStart))
-
-    // val conf = sc.hadoopConfiguration
-    // conf.set(VCFOutputFormat.OUTPUT_VCF_FORMAT_PROPERTY, vcfFormat.toString)
-    // withKey.saveAsNewAPIHadoopFile(filePath,
-    //   classOf[LongWritable], classOf[VariantContextWritable], classOf[ADAMVCFOutputFormat[LongWritable]],
-    //   conf)
-
-    // log.info("Write %d records".format(gatkVCs.count))
-
+    sc.adamSAMSave(args.outputPath, adamRecords)  
   }
 
 }
