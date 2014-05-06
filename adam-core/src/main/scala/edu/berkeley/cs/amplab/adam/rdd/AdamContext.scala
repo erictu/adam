@@ -364,13 +364,15 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
       // val dict = v.adamGetSequenceDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
       // val readGroups = v.getReadGroupDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
       converter.convert(v, dict, readGroups)
-      records
+      records //not converting
         // found   : org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
         // required: net.sf.samtools.SAMRecord
 
       })
     val conf = sc.hadoopConfiguration     //ERIC: here to input sc? put this in adamContext?
-    sc.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[Adam2SAM], conf) //key, value, output format
+    //how do I put this as a key value thing?
+    val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
+    withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[Adam2SAM], conf) //key, value, output format
       //not a member of sparkcontext
   }
 
