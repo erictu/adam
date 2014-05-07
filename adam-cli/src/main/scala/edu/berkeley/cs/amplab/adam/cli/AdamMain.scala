@@ -34,6 +34,7 @@ object AdamMain extends Logging {
     /* TODO (nealsid): Reimplement in terms of new schema
     ComputeVariants, 
      */
+    Adam2SAM, //added this in
     Bam2Adam,
     Adam2Vcf,
     Vcf2Adam,
