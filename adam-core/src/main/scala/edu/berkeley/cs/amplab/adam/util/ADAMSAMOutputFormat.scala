@@ -58,16 +58,8 @@ object ADAMSAMOutputFormat {
   }
 }
 
-
-//ERIC: Why does this take forever:
 class ADAMSAMOutputFormat[K]
-  extends KeyIgnoringBAMOutputFormat[K]{
+  extends KeyIgnoringAnySAMOutputFormat[K](SAMFormat.valueOf("SAM")) {
 
   setSAMHeader(ADAMSAMOutputFormat.getHeader)
 }
-
-// class ADAMSAMOutputFormat[K]
-//   extends KeyIgnoringAnySAMOutputFormat[K](SAMFormat.valueOf("SAM")) {
-
-//   setSAMHeader(AdamSAMOutputFormat.getHeader)
-// }

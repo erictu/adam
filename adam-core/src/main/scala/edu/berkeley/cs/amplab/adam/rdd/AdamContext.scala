@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 package edu.berkeley.cs.amplab.adam.rdd
-import edu.berkeley.cs.amplab.adam.util.ADAMSAMOutputFormat
+import edu.berkeley.cs.amplab.adam.util.{ADAMSAMOutputFormat,
+                                         ADAMBAMOutputFormat}
 import edu.berkeley.cs.amplab.adam.avro.{ADAMPileup, 
                                          ADAMRecord,
                                          ADAMNucleotideContigFragment}
