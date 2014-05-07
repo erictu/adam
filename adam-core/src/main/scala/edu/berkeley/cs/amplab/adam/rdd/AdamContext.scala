@@ -366,17 +366,15 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
     val dict = records.adamGetSequenceDictionary //value adamGetSequenceDictionary is not a member of org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
     val readGroups = records.getReadGroupDictionary
     val convertRecords: RDD[SAMRecord] = records.map(v => {
-      // val dict = v.adamGetSequenceDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
-      // val readGroups = v.getReadGroupDictionary //not a member of edu.berkeley.cs.amplab.adam.avro.ADAMRecord
       converter.convert(v, dict, readGroups)
-      // records //not converting
-        // found   : org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
-        // required: net.sf.samtools.SAMRecord
 
       })
-    val conf = sc.hadoopConfiguration     //ERIC: here to input sc? put this in adamContext?
-    //how do I put this as a key value thing?
-    
+    val conf = sc.hadoopConfiguration     
+
+    asSam match { //why can't I use setHeader? variationcontext does it MUST CHECK ADAMRDDFUNCTIONS
+      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.getHeader())
+      case false => ADAMBAMOutputFormat.addHeader(convertRecords.first.getHeader())
+    }
     val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
     asSam match {
       case true => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMSAMOutputFormat[LongWritable]], conf) 
