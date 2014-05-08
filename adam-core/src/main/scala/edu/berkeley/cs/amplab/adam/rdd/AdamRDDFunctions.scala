@@ -153,7 +153,7 @@ class AdamRecordRDDFunctions(rdd: RDD[ADAMRecord]) extends AdamSequenceDictionar
     new RecordGroupDictionary(rgNames)
   }
 
-  def convertToSam(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary, rdd: RDD[ADAMRecord]): RDD[SAMRecord] = { 
+  def convertToSam(): RDD[SAMRecord] = { 
     val sd = rdd.adamGetSequenceDictionary()         
     val rgd = rdd.getReadGroupDictionary()        
     val sdBcast = rdd.context.broadcast(sd)

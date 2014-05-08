@@ -370,9 +370,9 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
 
       })
     val conf = sc.hadoopConfiguration     
-
+    //difference between addHeader and setSAMHeader? Why can't I use setSAMHeader
     asSam match { //why can't I use setHeader? variationcontext does it MUST CHECK ADAMRDDFUNCTIONS
-      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.getHeader())
+      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.getHeader()) //ERROR: not working
       case false => ADAMBAMOutputFormat.addHeader(convertRecords.first.getHeader())
     }
     val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
