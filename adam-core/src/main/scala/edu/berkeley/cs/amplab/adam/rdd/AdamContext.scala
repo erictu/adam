@@ -365,20 +365,22 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
     val converter = new ADAMRecordConverter
     val dict = records.adamGetSequenceDictionary //value adamGetSequenceDictionary is not a member of org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
     val readGroups = records.getReadGroupDictionary
-    val convertRecords: RDD[SAMRecord] = records.map(v => {
-      converter.convert(v, dict, readGroups)
+    val convertRecords: RDD[SAMRecordWritable] = records.map(v => {
+      val srw = new SAMRecordWritable
+      srw.set(converter.convert(v, dict, readGroups))
+      srw
 
       })
     val conf = sc.hadoopConfiguration     
     //difference between addHeader and setSAMHeader? Why can't I use setSAMHeader
     asSam match { //why can't I use setHeader? variationcontext does it MUST CHECK ADAMRDDFUNCTIONS
-      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.getHeader()) //ERROR: not working
-      case false => ADAMBAMOutputFormat.addHeader(convertRecords.first.getHeader())
+      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.get.getHeader()) //ERROR: not working
+      case false => ADAMBAMOutputFormat.addHeader(convertRecords.first.get.getHeader())
     }
-    val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
+    val withKey = convertRecords.keyBy(v => new LongWritable(v.get.getAlignmentStart))
     asSam match {
-      case true => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMSAMOutputFormat[LongWritable]], conf) 
-      case false => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMBAMOutputFormat[LongWritable]], conf) 
+      case true => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecordWritable], classOf[ADAMSAMOutputFormat[LongWritable]], conf) 
+      case false => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecordWritable], classOf[ADAMBAMOutputFormat[LongWritable]], conf) 
     }
 
     // val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))

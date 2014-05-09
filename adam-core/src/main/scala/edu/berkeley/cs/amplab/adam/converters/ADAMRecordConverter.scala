@@ -19,7 +19,7 @@ import net.sf.samtools.{SAMReadGroupRecord, SAMRecord}
 
 import edu.berkeley.cs.amplab.adam.avro.ADAMRecord
 import scala.collection.JavaConverters._
-import edu.berkeley.cs.amplab.adam.models.{RecordGroupDictionary, SequenceDictionary}
+import edu.berkeley.cs.amplab.adam.models.{RecordGroupDictionary, SequenceDictionary, SequenceRecord}
 import edu.berkeley.cs.amplab.adam.rdd.AdamContext._ 	
 import net.sf.samtools.SAMFileHeader
 import edu.berkeley.cs.amplab.adam.rich.RichADAMRecord
@@ -41,6 +41,18 @@ class ADAMRecordConverter extends Serializable {
 		Option(adamRecord.getRecordGroupPlatformUnit).foreach(v => readGroupFromADAM.setPlatformUnit(v))
 		Option(adamRecord.getRecordGroupSample).foreach(v => readGroupFromADAM.setSample(v))
 
+		//adding mate reference things into header
+		if (adamRecord.getMateReferenceId != null) {
+			val mateRefName = adamRecord.getMateReference
+			val mateRefId = adamRecord.getMateReferenceId
+			val mateRefLength = adamRecord.getMateReferenceLength
+			val mateRefUrl = adamRecord.getMateReferenceUrl
+			val fakeMd5 = "blah"
+			//fake the md5 for now
+			val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, fakeMd5)
+			dict.+(mateRefSeqRecord)
+
+		}
 		val header: SAMFileHeader = createSAMHeader(dict, readGroups, readGroupFromADAM)
 		val builder: SAMRecord = new SAMRecord(header)
 
