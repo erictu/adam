@@ -47,9 +47,15 @@ class ADAMRecordConverter extends Serializable {
 			val mateRefId = adamRecord.getMateReferenceId
 			val mateRefLength = adamRecord.getMateReferenceLength
 			val mateRefUrl = adamRecord.getMateReferenceUrl
-			val fakeMd5 = "blah"
+
+
+			val fakeMd5 = "1b22b98cdeb4a9304cb5d48026a85128"	//throws an error, this was added in 
 			//fake the md5 for now
-			val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, fakeMd5)
+			//why am I able to construct a dictionary without the md5 of a sequencerecord
+
+			val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, fakeMd5) //class v object?
+			//sparkfunsuite line 102?
+			println("YAYYYYYYYY REACHED HERE!!!!!!")
 			dict.+(mateRefSeqRecord)
 
 		}

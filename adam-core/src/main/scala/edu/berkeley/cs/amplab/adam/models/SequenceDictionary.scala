@@ -382,7 +382,7 @@ class SequenceRecord(val id: Int, val name: CharSequence, val length: Long, val 
 
   override def hashCode: Int = ((id + name.hashCode) * 37 + length.hashCode) * 37
 
-  override def toString: String = "%s->%s=%d".format(id, name, length)
+  override def toString: String = "%s->%s=%d, %s, %s".format(id, name, length, url, md5)
 
   /**
    * Converts this sequence record into a SAM sequence record.
