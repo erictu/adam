@@ -361,9 +361,8 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
   def adamSAMSave(filePath: String, records: RDD[ADAMRecord], asSam: Boolean = true) = {
 
 
-    // ADAMSAMOutputFormat.setHeader() //WHERE/HOW DO I DO THIS
     val converter = new ADAMRecordConverter
-    val dict = records.adamGetSequenceDictionary //value adamGetSequenceDictionary is not a member of org.apache.spark.rdd.RDD[edu.berkeley.cs.amplab.adam.avro.ADAMRecord]
+    val dict = records.adamGetSequenceDictionary 
     val readGroups = records.getReadGroupDictionary
     val convertRecords: RDD[SAMRecordWritable] = records.map(v => {
       val srw = new SAMRecordWritable
@@ -372,9 +371,9 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
 
       })
     val conf = sc.hadoopConfiguration     
-    //difference between addHeader and setSAMHeader? Why can't I use setSAMHeader
-    asSam match { //why can't I use setHeader? variationcontext does it MUST CHECK ADAMRDDFUNCTIONS
-      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.get.getHeader()) //ERROR: not working
+
+    asSam match { 
+      case true => ADAMSAMOutputFormat.addHeader(convertRecords.first.get.getHeader()) 
       case false => ADAMBAMOutputFormat.addHeader(convertRecords.first.get.getHeader())
     }
     val withKey = convertRecords.keyBy(v => new LongWritable(v.get.getAlignmentStart))
@@ -383,8 +382,6 @@ class AdamContext(sc: SparkContext) extends Serializable with Logging {
       case false => withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecordWritable], classOf[ADAMBAMOutputFormat[LongWritable]], conf) 
     }
 
-    // val withKey = convertRecords.keyBy(v => new LongWritable(v.getAlignmentStart))
-    // withKey.saveAsNewAPIHadoopFile(filePath, classOf[LongWritable], classOf[SAMRecord], classOf[ADAMSAMOutputFormat[LongWritable]], conf) 
   }
 
 }
