@@ -41,61 +41,30 @@ class ADAMRecordConverter extends Serializable {
 		Option(adamRecord.getRecordGroupPlatformUnit).foreach(v => readGroupFromADAM.setPlatformUnit(v))
 		Option(adamRecord.getRecordGroupSample).foreach(v => readGroupFromADAM.setSample(v))
 
-		// //adding mate reference things into header
-		// if (adamRecord.getMateReferenceId != null) {
-		// 	val mateRefName = adamRecord.getMateReference
-		// 	val mateRefId = adamRecord.getMateReferenceId
-		// 	val mateRefLength = adamRecord.getMateReferenceLength
-		// 	val mateRefUrl = adamRecord.getMateReferenceUrl
-
-
-		// 	println(mateRefName)
-		// 	println(mateRefId)
-		// 	println(mateRefLength)
-		// 	println(mateRefUrl)
-		// 	// val fakeMd5 = "1b22b98cdeb4a9304cb5d48026a85128"	//throws an error, this was added in 
-		// 	// //fake the md5 for now
-		// 	// //why am I able to construct a dictionary without the md5 of a sequencerecord
-		// 	// val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, fakeMd5) //class v object?
-		// 	val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, "1b22b98cdeb4a9304cb5d48026a85128") //class v object?
-		// 	// //sparkfunsuite line 102?
-		// 	println("YAYYYYYYYY REACHED HERE!!!!!!")
-		// 	// dict.+(SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl))
-		// 	println(mateRefSeqRecord)
-		// 	val refDict = dict+(mateRefSeqRecord)
-		// 	println(refDict)
-		// 	val header: SAMFileHeader = createSAMHeader(refDict, readGroups, readGroupFromADAM)
-		// 	println(header)
-		// } else {
-		// 	val header: SAMFileHeader = createSAMHeader(dict, readGroups, readGroupFromADAM)
-		// 	println(header)
-		// }
-		// assert(adamRecord.mateReferenceId != null)
 		val mateRefName = adamRecord.getMateReference
-		val mateRefId = adamRecord.getMateReferenceId-1
+		val mateRefId = if(adamRecord.getMateReferenceId == 0)
+			0
+		else
+			adamRecord.getMateReferenceId-1
 		val mateRefLength = adamRecord.getMateReferenceLength
+
 		val mateRefUrl = adamRecord.getMateReferenceUrl
 
 
-		println(mateRefName)
-		println(mateRefId)
-		println(mateRefLength)
-		println(mateRefUrl)
-		// val fakeMd5 = "1b22b98cdeb4a9304cb5d48026a85128"	//throws an error, this was added in 
-		// //fake the md5 for now
-		// //why am I able to construct a dictionary without the md5 of a sequencerecord
-		// val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, fakeMd5) //class v object?
+		println("mateRefName is: " + mateRefName)
+		println("mateRefId is: " + mateRefId)
+		println("mateRefLength is: " +mateRefLength)
+		println("mateRefUrl is: " + mateRefUrl)
+		//fake md5 for now
 		val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, "1b22b98cdeb4a9304cb5d48026a85128") //class v object?
-		// //sparkfunsuite line 102?
-		println("YAYYYYYYYY REACHED HERE!!!!!!")
-		// dict.+(SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl))
-		println(mateRefSeqRecord)
+
+		println("materefseqrecord is: " + mateRefSeqRecord)
+		println("adding into the following dict: " + dict)
+		
 		val refDict = dict+(mateRefSeqRecord)
-		println(refDict)
+		println("after adding into dict: " + refDict)
 		val header: SAMFileHeader = createSAMHeader(refDict, readGroups, readGroupFromADAM)
 
-
-		println(header)
 		val builder: SAMRecord = new SAMRecord(header)
 
 		builder.setReadName(adamRecord.getReadName.toString) 
@@ -118,13 +87,9 @@ class ADAMRecordConverter extends Serializable {
 	
 		if (adamRecord.getMateReferenceId != null) {
 			println("sequence is : " + header.getSequence(adamRecord.getMateReferenceId-1))
-			// println(builder)
-			// println(builder.getHeader.getSequence(1))
-			// builder.setMateReferenceIndex(adamRecord.getMateReferenceId-1)
 			println("sequence is: " + header.getSequence(adamRecord.getMateReference))
 			println("header seq index is: " + header.getSequenceIndex("matereferencetest"))
-			// println("with 1 we have: " + header.getSequence(1).getSequenceName)
-			// println("with 2 we have: " + header.getSequence(2).getSequenceName) //doesn't work
+
 			builder.setMateReferenceName(adamRecord.getMateReference)		
 
 			val mateStart: Int = adamRecord.getMateAlignmentStart.toInt		
