@@ -41,6 +41,7 @@ class SequenceDictionary(val recordsIn: Array[SequenceRecord]) extends Serializa
   // check that no referenceName is listed twice, to two different referenceIds
   assert(idNamePairs.groupBy(_._2).map(p => (p._1, p._2.size)).filter(p => p._2 > 1).isEmpty,
     "Duplicate Name in %s".format(idNamePairs))
+  //TRY CATCH PUT IN HERE LATER
 
   // Pre-compute the hashCode, based on a sorted version of the idNamePairs list.
   private val _hashCode: Int = idNamePairs.toSeq.sortWith(_ < _).foldLeft(0) {

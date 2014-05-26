@@ -99,7 +99,7 @@ trait SparkFunSuite extends FunSuite with BeforeAndAfter {
       sc = createSpark(name, silenceSpark)
       try {
         // Run the test
-        body
+        body //fails here
       }
       finally {
         destroySpark()

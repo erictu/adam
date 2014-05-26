@@ -45,7 +45,7 @@ class ADAMRecordConverter extends Serializable {
 		val mateRefId = if(adamRecord.getMateReferenceId == 0)
 			0
 		else
-			adamRecord.getMateReferenceId-1
+			adamRecord.getMateReferenceId.toInt
 		val mateRefLength = adamRecord.getMateReferenceLength
 
 		val mateRefUrl = adamRecord.getMateReferenceUrl
@@ -60,11 +60,14 @@ class ADAMRecordConverter extends Serializable {
 
 		println("materefseqrecord is: " + mateRefSeqRecord)
 		println("adding into the following dict: " + dict)
-		
-		val refDict = dict+(mateRefSeqRecord)
+		val refDict = if (!dict.recordsIn.contains(mateRefSeqRecord)) 
+			dict
+		else 
+			dict+(mateRefSeqRecord)
+		// val refDict = dict+(mateRefSeqRecord)
 		println("after adding into dict: " + refDict)
 		val header: SAMFileHeader = createSAMHeader(refDict, readGroups, readGroupFromADAM)
-
+		println("added successfully")
 		val builder: SAMRecord = new SAMRecord(header)
 
 		builder.setReadName(adamRecord.getReadName.toString) 
@@ -86,7 +89,8 @@ class ADAMRecordConverter extends Serializable {
 		}
 	
 		if (adamRecord.getMateReferenceId != null) {
-			println("sequence is : " + header.getSequence(adamRecord.getMateReferenceId-1))
+			println("sequence is (-1) : " + header.getSequence(adamRecord.getMateReferenceId-1))
+			println("sequence is : " + header.getSequence(adamRecord.getMateReferenceId))
 			println("sequence is: " + header.getSequence(adamRecord.getMateReference))
 			println("header seq index is: " + header.getSequenceIndex("matereferencetest"))
 
