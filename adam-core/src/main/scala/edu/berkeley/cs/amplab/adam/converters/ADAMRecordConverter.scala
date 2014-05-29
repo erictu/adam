@@ -57,18 +57,29 @@ class ADAMRecordConverter extends Serializable {
 		println("mateRefLength is: " +mateRefLength)
 		println("mateRefUrl is: " + mateRefUrl)
 		//fake md5 for now
-		val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, "1b22b98cdeb4a9304cb5d48026a85128") //class v object?
-
+		val mateRefSeqRecord = SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl) //actual thing added
+		val containedRecord = SequenceRecord(mateRefId+1, mateRefName, mateRefLength, mateRefUrl) //used to see if the record is already contained
 		println("materefseqrecord is: " + mateRefSeqRecord)
-		println("adding into the following dict: " + dict)
-		val contained = dict.recordsIn.contains(mateRefSeqRecord)
+		println("containedRecord is: " + containedRecord)
+		println("ADDING INTO FOLLOWING DICT: " + dict)
+
+		val contained = dict.recordsIn.contains(containedRecord) //whether record is already in dict
 		println("already contained is: " + contained)
-		val refDict = if (dict.recordsIn.contains(mateRefSeqRecord)) 
+		
+		//TESTING BELOW
+		val last = dict.recordsIn.last
+		println("last is : " + last)
+		println("last = contained? : " + (containedRecord == last)) 
+		//TESTING END
+
+		println("records in is: " + dict.recordsIn.toList)
+		// println("records in is: " + dict.recordsIn.map(_.toSAMSequenceRecord).toList)
+		val refDict = if (contained) 
 			dict
 		else 
 			dict+(mateRefSeqRecord)
 
-		println("after adding into dict: " + refDict)
+		println("AFTER ADDING INTO DICT: " + refDict)
 		val header: SAMFileHeader = createSAMHeader(refDict, readGroups, readGroupFromADAM)
 
 		val builder: SAMRecord = new SAMRecord(header)
@@ -92,15 +103,21 @@ class ADAMRecordConverter extends Serializable {
 		}
 	
 		if (adamRecord.getMateReferenceId != null) {
+			//TESTING
 			println("sequence is (by id-1) : " + header.getSequence(adamRecord.getMateReferenceId-1))
 			println("sequence is (by id): " + header.getSequence(adamRecord.getMateReferenceId))
 			println("sequence is (-1) : " + header.getSequence(-1))
-
 			println("sequence is (by id): " + header.getSequence(adamRecord.getMateReferenceId))
 			println("sequence is (by name): " + header.getSequence("matereferencetest"))
 
 			println("header seq index is: " + header.getSequenceIndex("matereferencetest"))
 			println("header dict is: " + header.getSequenceDictionary.getSequences)
+
+			//THREE PRINT STATEMENTS BELOW FOLLOW SAMRECORD CODE
+			println("REFERENCE INDEX IS: " + builder.getHeader.getSequenceIndex(adamRecord.getMateReference))
+			println("SEQUENCE IS: " + builder.getHeader.getSequence(adamRecord.getMateReference))
+			println("REFERENCE NAME IS: " + builder.getHeader.getSequence(adamRecord.getMateReference).getSequenceName)
+			
 			builder.setMateReferenceName(adamRecord.getMateReference)		//id supposedly set here
 
 			val mateStart: Int = adamRecord.getMateAlignmentStart.toInt		

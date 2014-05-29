@@ -264,7 +264,7 @@ class SequenceDictionary(val recordsIn: Array[SequenceRecord]) extends Serializa
    *
    * @return Returns a SAM formatted sequence dictionary.
    */
-  def toSAMSequenceDictionary(): SAMSequenceDictionary = {      
+  def toSAMSequenceDictionary(): SAMSequenceDictionary = {    
     val toSAMSeqDict = new SAMSequenceDictionary(recordsIn.map(_.toSAMSequenceRecord).toList)
     recordsIn.foreach(r => toSAMSeqDict.getSequence(r.name).setSequenceIndex(r.id)) //because constructor for SAMSequenceDictionary gets rid of the indices
     toSAMSeqDict

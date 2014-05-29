@@ -87,11 +87,11 @@ class SequenceDictionarySuite extends FunSuite {
     }
   }
 
-  // test("double referenceNames throws an exception") { //ERIC: taken out for now
-  //   intercept[AssertionError] {
-  //     SequenceDictionary(record(0, "foo"), record(1, "foo"))
-  //   }
-  // }
+  test("double referenceNames throws an exception") { //ERIC: taken out for now
+    intercept[AssertionError] {
+      SequenceDictionary(record(0, "foo"), record(1, "foo"))
+    }
+  }
 
   test("mapTo generates correct identifier mappings") {
     val fromDict = SequenceDictionary(

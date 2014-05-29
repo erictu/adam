@@ -226,7 +226,7 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
   //   assert(adamRead.getReadMapped == backToADAM.getReadMapped)
   //   assert(adamRead.getMismatchingPositions == backToADAM.getMismatchingPositions)
   // }
-    sparkTest("testing the fields in a converted ADAM Read") {
+    sparkTest("testing the fields in a converted ADAM Read part 1") {
     val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
     adamRead.setRecordGroupName("testname")
     adamRead.setReferenceId(0)      
@@ -254,6 +254,58 @@ class ADAMtoSAMConverterSuite extends SparkFunSuite {
     // val seqRecForDict = SequenceRecord(0, "referencetest", 5, "test://chrom1")   //works if I don't do new? 
     // pritnln("seqRecForDict : " + seqRecForDict)
     val dict = SequenceDictionary(seqRecForDict)
+    val readGroups = new RecordGroupDictionary(Seq("testing"))
+    val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
+    val sequence = "A" * 4
+    assert(toSAM.getReadName == ("read" + 0.toString))
+    assert(toSAM.getAlignmentStart == 4) 
+    assert(toSAM.getReadUnmappedFlag == true)
+    assert(toSAM.getCigarString == "2M3D2M")     
+    assert(toSAM.getReadString == sequence)
+    assert(toSAM.getReadNegativeStrandFlag == false)
+    assert(toSAM.getMappingQuality == 60)
+    assert(toSAM.getBaseQualityString == sequence)
+    assert(toSAM.getReferenceIndex == 0) 
+    assert(toSAM.getAttribute("MD") == "2^AAA2")
+    println("Mate Reference Index is : " + toSAM.getMateReferenceIndex)
+    println("Mate Reference Name is : " + toSAM.getMateReferenceName)
+    println("Mate Alignment Start is : " + toSAM.getMateAlignmentStart)
+    assert(toSAM.getMateReferenceIndex != -1)
+    assert(toSAM.getMateReferenceIndex == 1)
+    assert(toSAM.getMateReferenceName == "matereferencetest")
+    assert(toSAM.getMateAlignmentStart == 7)
+    // assert(toSAM.getMateReferenceIndex == 0)
+    // assert(toSAM.getMateReferenceName == "matereferencetest")
+    // assert(toSAM.getMateAlignmentStart == 7)
+  }
+    sparkTest("testing the fields in a converted ADAM Read") {
+    val adamRead = make_read(3L, "2M3D2M", "2^AAA2", 4)
+    adamRead.setRecordGroupName("testname")
+    adamRead.setReferenceId(0)      
+    adamRead.setReferenceName("referencetest")
+    //mate stuff
+    adamRead.setMateReferenceId(2)
+    adamRead.setMateReference("matereferencetest")
+    adamRead.setMateAlignmentStart(6L)
+    adamRead.setMateReferenceLength(6L)
+    adamRead.setMateReferenceUrl("test://chrom1")
+    // val fakeMd5 = "1b22b98cdeb4a9304cb5d48026a85128"
+    // val mateRefId = 0
+    // val mateRefName = "matereferencetest" 
+    // val mateRefLength = 6L
+    // val mateRefUrl = "test://chrom1"
+    // val mateRefSeqRecord = SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl, fakeMd5)
+
+    // // val mateRefSeqRecord = new SequenceRecord(mateRefId, mateRefName, mateRefLength, mateRefUrl)
+    // println("the tested mateRefSeqRecord is : " + mateRefSeqRecord)
+    val seqRecForDict = SequenceRecord(0, "referencetest", 5, "test://chrom1")   //works if I don't do new? 
+    // println("seqRecForDict : " + seqRecForDict)
+    //mate stuff
+    val adamRecordConverter = new ADAMRecordConverter
+    val samRecordConverter = new SAMRecordConverter
+    // val seqRecForDict = SequenceRecord(0, "referencetest", 5, "test://chrom1")   //works if I don't do new? 
+    // pritnln("seqRecForDict : " + seqRecForDict)
+    val dict = SequenceDictionary(seqRecForDict, SequenceRecord(2, "matereferencetest", 6, "test://chrom1"))
     val readGroups = new RecordGroupDictionary(Seq("testing"))
     val toSAM = adamRecordConverter.convert(adamRead, dict, readGroups)
     val sequence = "A" * 4
