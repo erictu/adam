@@ -63,14 +63,11 @@ class ADAMRecordConverter extends Serializable {
 		println("adding into the following dict: " + dict)
 		val contained = dict.recordsIn.contains(mateRefSeqRecord)
 		println("already contained is: " + contained)
-		// val refDict = if (!dict.recordsIn.contains(mateRefSeqRecord)) 
-		// 	dict
-			
-		// else 
-		// 	dict+(mateRefSeqRecord)
+		val refDict = if (dict.recordsIn.contains(mateRefSeqRecord)) 
+			dict
+		else 
+			dict+(mateRefSeqRecord)
 
-		val refDict = dict+(mateRefSeqRecord)
-		// val refDict = dict+(mateRefSeqRecord)
 		println("after adding into dict: " + refDict)
 		val header: SAMFileHeader = createSAMHeader(refDict, readGroups, readGroupFromADAM)
 
