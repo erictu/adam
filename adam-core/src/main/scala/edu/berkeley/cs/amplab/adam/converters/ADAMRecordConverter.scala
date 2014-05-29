@@ -29,6 +29,7 @@ import java.util.Date
 class ADAMRecordConverter extends Serializable {
 	def convert(adamRecord: ADAMRecord, dict: SequenceDictionary, readGroups: RecordGroupDictionary): SAMRecord = {	
 		assert(adamRecord.getRecordGroupName != null, "can't get record group name if not set")
+		println("-----------------START INSIDE ADAMRECORDCONVERTER-----------------")
 		val readGroupFromADAM: SAMReadGroupRecord = new SAMReadGroupRecord(adamRecord.getRecordGroupName)
 		Option(adamRecord.getRecordGroupSequencingCenter).foreach(v => readGroupFromADAM.setSequencingCenter(v.toString)) 	
 		Option(adamRecord.getRecordGroupRunDateEpoch).foreach(v => readGroupFromADAM.setRunDate(new Date(v)))
@@ -45,7 +46,7 @@ class ADAMRecordConverter extends Serializable {
 		val mateRefId = if(adamRecord.getMateReferenceId == 0)
 			0
 		else
-			adamRecord.getMateReferenceId.toInt
+			adamRecord.getMateReferenceId-1
 		val mateRefLength = adamRecord.getMateReferenceLength
 
 		val mateRefUrl = adamRecord.getMateReferenceUrl
@@ -60,14 +61,19 @@ class ADAMRecordConverter extends Serializable {
 
 		println("materefseqrecord is: " + mateRefSeqRecord)
 		println("adding into the following dict: " + dict)
-		val refDict = if (!dict.recordsIn.contains(mateRefSeqRecord)) 
-			dict
-		else 
-			dict+(mateRefSeqRecord)
+		val contained = dict.recordsIn.contains(mateRefSeqRecord)
+		println("already contained is: " + contained)
+		// val refDict = if (!dict.recordsIn.contains(mateRefSeqRecord)) 
+		// 	dict
+			
+		// else 
+		// 	dict+(mateRefSeqRecord)
+
+		val refDict = dict+(mateRefSeqRecord)
 		// val refDict = dict+(mateRefSeqRecord)
 		println("after adding into dict: " + refDict)
 		val header: SAMFileHeader = createSAMHeader(refDict, readGroups, readGroupFromADAM)
-		println("added successfully")
+
 		val builder: SAMRecord = new SAMRecord(header)
 
 		builder.setReadName(adamRecord.getReadName.toString) 
@@ -89,12 +95,16 @@ class ADAMRecordConverter extends Serializable {
 		}
 	
 		if (adamRecord.getMateReferenceId != null) {
-			println("sequence is (-1) : " + header.getSequence(adamRecord.getMateReferenceId-1))
-			println("sequence is : " + header.getSequence(adamRecord.getMateReferenceId))
-			println("sequence is: " + header.getSequence(adamRecord.getMateReference))
-			println("header seq index is: " + header.getSequenceIndex("matereferencetest"))
+			println("sequence is (by id-1) : " + header.getSequence(adamRecord.getMateReferenceId-1))
+			println("sequence is (by id): " + header.getSequence(adamRecord.getMateReferenceId))
+			println("sequence is (-1) : " + header.getSequence(-1))
 
-			builder.setMateReferenceName(adamRecord.getMateReference)		
+			println("sequence is (by id): " + header.getSequence(adamRecord.getMateReferenceId))
+			println("sequence is (by name): " + header.getSequence("matereferencetest"))
+
+			println("header seq index is: " + header.getSequenceIndex("matereferencetest"))
+			println("header dict is: " + header.getSequenceDictionary.getSequences)
+			builder.setMateReferenceName(adamRecord.getMateReference)		//id supposedly set here
 
 			val mateStart: Int = adamRecord.getMateAlignmentStart.toInt		
 			if (mateStart > 0) {
@@ -145,6 +155,7 @@ class ADAMRecordConverter extends Serializable {
 					builder.setAttribute(a.tag, a.value)
 			})
 		}
+		println("-----------------END INSIDE ADAMRECORDCONVERTER-----------------")
 		builder
 	}
 
