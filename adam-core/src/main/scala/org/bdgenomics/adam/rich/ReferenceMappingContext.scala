@@ -32,9 +32,9 @@ object ReferenceMappingContext {
   }
 
   implicit object GenotypeReferenceMapping extends ReferenceMapping[Genotype] with Serializable {
-    override def getReferenceName(value: Genotype): String = value.getSampleId.toString
+    override def getReferenceName(value: Genotype): String = value.getVariant.getContig.getContigName.toString
     override def getReferenceRegion(value: Genotype): ReferenceRegion =
-      ReferenceRegion(value.getSampleId.toString, value.getVariant.getStart, value.getVariant.getEnd)
+      ReferenceRegion(value.getVariant.getContig.getContigName.toString, value.getVariant.getStart, value.getVariant.getEnd)
   }
 
   implicit object AlignmentRecordReferenceMapping extends ReferenceMapping[AlignmentRecord] with Serializable {
