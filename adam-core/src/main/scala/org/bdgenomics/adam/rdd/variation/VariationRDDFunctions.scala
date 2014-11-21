@@ -112,3 +112,4 @@ class GenotypeRDDFunctions(rdd: RDD[Genotype]) extends Serializable with Logging
   }
 
 }
+
