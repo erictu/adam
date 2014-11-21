@@ -204,10 +204,10 @@ class VizReads(protected val args: VizReadsArgs) extends ADAMSparkCommand[VizRea
     VizReads.refName = args.refName
 
     val proj = Projection(contig, readMapped, readName, start, end)
-    VizReads.reads = sc.adamLoad(args.inputPath, projection = Some(proj))
+    // VizReads.reads = sc.adamLoad(args.inputPath, projection = Some(proj))
 
     //TODO: this is causing an error:
-    println("inputPath is: " + args.inputPath)
+    // println("inputPath is: " + args.inputPath)
     // if (inputPath)
     println("refName is: " + args.refName)
     VizReads.variants = sc.adamVCFLoad(args.inputPath).flatMap(_.genotypes)
