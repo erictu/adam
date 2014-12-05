@@ -283,7 +283,7 @@
         function update(newStart, newEnd) {
             start = newStart;
             end = newEnd;
-            jsonLocation = ("/reads/" + refName + "?start=" + start + "&end=" + end);
+            jsonLocation = ("/variants/" + refName + "?start=" + start + "&end=" + end);
             var numTracks = 0;
 
             d3.json(jsonLocation, function(error, data) {

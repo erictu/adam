@@ -179,23 +179,30 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport { //look into t
   get("/variants/?") {
     contentType = "text/html"
     val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
+    input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input) //ERROR: where is the implicit mapping?
     val templateEngine = new TemplateEngine
+    val displayMap = Map("regInfo" -> (regInfo.referenceName, regInfo.start.toString, regInfo.end.toString),
+      "width" -> VizReads.width.toString,
+      "base" -> VizReads.base.toString,
+      "numTracks" -> filteredGenotypeTrack.numTracks.toString,
+      "trackHeight" -> VizReads.trackHeight.toString)
+    displayMap.foreach(println)
     templateEngine.layout("adam-cli/src/main/webapp/WEB-INF/layouts/variants.ssp",
-      Map("regInfo" -> (regInfo.referenceName, regInfo.start.toString, regInfo.end.toString),
-        "width" -> VizReads.width.toString,
-        "base" -> VizReads.base.toString,
-        "numTracks" -> filteredGenotypeTrack.numTracks.toString,
-        "trackHeight" -> VizReads.trackHeight.toString)) //putting this here allows acces in ssp file
+      displayMap) //putting this here allows acces in ssp file
   }
   //E
   get("/variants/:ref") {
     contentType = formats("json")
 
     regInfo = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
+    println(regInfo)
     val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
+    input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input) //ERROR: where is the implicit mapping?
-    VizReads.printTrackJsonVariant(filteredGenotypeTrack) //TODO: analog for variants?
+    val vizJson = VizReads.printTrackJsonVariant(filteredGenotypeTrack) //TODO: analog for variants?
+    vizJson.foreach(println)
+    vizJson
   }
 
 }

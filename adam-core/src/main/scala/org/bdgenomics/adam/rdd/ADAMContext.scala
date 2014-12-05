@@ -279,7 +279,7 @@ class ADAMContext(val sc: SparkContext) extends Serializable with Logging {
         log.warn("Projection is ignored when loading a VCF file")
       }
       val variants = sc.adamVCFLoad(filePath)
-        .flatMap(_.genotypes) 
+        .flatMap(_.genotypes)
 
       Some(applyPredicate(variants, predicate))
     } else
