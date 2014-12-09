@@ -156,7 +156,7 @@
         var trackHeight = parseInt(${trackHeight}, 10);
         var numTracks = parseInt(${numTracks}, 10);
         var height = (numTracks+1) * trackHeight;
-        var jsonLocation = "/reads/" + refName + "?start=" + start + "&end=" + end;
+        var jsonLocation = "/variants/" + refName + "?start=" + start + "&end=" + end;
 
         var svgContainer = d3.select("body")
                              .append("svg")
@@ -173,6 +173,8 @@
                 d.start = +d.start;
                 d.end = +d.end;
                 d.track = +d.track;
+                d.referenceAllele = d.referenceAllele;
+                d.alternateAllele = d.alternateAllele;
             });
 
             // Add the rectangles
@@ -189,7 +191,7 @@
                                             div.transition()
                                             .duration(200)
                                             .style("opacity", .9);
-                                            div .html(d.readName)
+                                            div .html(d.contigName)
                                             .style("left", (d3.event.pageX) + "px")
                                             .style("top", (d3.event.pageY - 28) + "px");
                                         })

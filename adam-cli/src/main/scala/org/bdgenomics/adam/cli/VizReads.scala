@@ -45,7 +45,7 @@ object VizReads extends ADAMCommandCompanion {
   //E
   var variants: RDD[Genotype] = null
 
-  val trackHeight = 5
+  val trackHeight = 10
   val width = 1200
   val height = 400
   val base = 50
@@ -66,13 +66,19 @@ object VizReads extends ADAMCommandCompanion {
   }
 
   //E
-  def printTrackJsonVariant(layout: OrderedTrackedLayout[Genotype]): List[TrackJson] = { //is this right?
-    var tracks = new scala.collection.mutable.ListBuffer[TrackJson]
+  def printVariationJson(layout: OrderedTrackedLayout[Genotype]): List[VariationJson] = { //is this right?
+    var tracks = new scala.collection.mutable.ListBuffer[VariationJson]
 
     // draws a box for each read, in the appropriate track
     for ((rec, track) <- layout.trackAssignments) {
       val aRec = rec.asInstanceOf[Genotype]
-      tracks += new TrackJson(aRec.getVariant.getContig.getContigName, aRec.getVariant.getStart, aRec.getVariant.getEnd, track)
+      val referenceAllele = aRec.getVariant.getReferenceAllele
+      val alternateAllele = aRec.getVariant.getAlternateAllele
+      println("alleles are: ")
+      println(referenceAllele)
+      println(alternateAllele)
+      tracks += new VariationJson(aRec.getVariant.getContig.getContigName, referenceAllele, alternateAllele, aRec.getVariant.getStart, aRec.getVariant.getEnd, track)
+      //TODO: add in alleles here and Additional Info
     }
     tracks.toList
   }
@@ -112,6 +118,7 @@ object VizReads extends ADAMCommandCompanion {
 }
 
 case class TrackJson(readName: String, start: Long, end: Long, track: Long)
+case class VariationJson(contigName: String, refAllele: String, altAllele: String, start: Long, end: Long, track: Long)
 case class FreqJson(base: Long, freq: Long)
 
 class VizReadsArgs extends Args4jBase with ParquetArgs {
@@ -179,6 +186,7 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport { //look into t
   get("/variants/?") {
     contentType = "text/html"
     val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
+    println("Inputforeach")
     input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input) //ERROR: where is the implicit mapping?
     val templateEngine = new TemplateEngine
@@ -187,6 +195,7 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport { //look into t
       "base" -> VizReads.base.toString,
       "numTracks" -> filteredGenotypeTrack.numTracks.toString,
       "trackHeight" -> VizReads.trackHeight.toString)
+    println("DisplayMap")
     displayMap.foreach(println)
     templateEngine.layout("adam-cli/src/main/webapp/WEB-INF/layouts/variants.ssp",
       displayMap) //putting this here allows acces in ssp file
@@ -200,7 +209,8 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport { //look into t
     val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
     input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input) //ERROR: where is the implicit mapping?
-    val vizJson = VizReads.printTrackJsonVariant(filteredGenotypeTrack) //TODO: analog for variants?
+    val vizJson = VizReads.printVariationJson(filteredGenotypeTrack) //TODO: analog for variants?
+    println("vizJson")
     vizJson.foreach(println)
     vizJson
   }
