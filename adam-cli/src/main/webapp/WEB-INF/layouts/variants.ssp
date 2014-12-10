@@ -169,12 +169,11 @@
 
         d3.json(jsonLocation, function(error, data) {
             data.forEach(function(d) {
-                d.readName = d.readName;
+                d.contigName = d.contigName;
                 d.start = +d.start;
                 d.end = +d.end;
                 d.track = +d.track;
-                d.referenceAllele = d.referenceAllele;
-                d.alternateAllele = d.alternateAllele;
+                d.alleles = d.alleles;
             });
 
             // Add the rectangles
@@ -191,7 +190,7 @@
                                             div.transition()
                                             .duration(200)
                                             .style("opacity", .9);
-                                            div .html(d.contigName)
+                                            div .html(d.alleles)
                                             .style("left", (d3.event.pageX) + "px")
                                             .style("top", (d3.event.pageY - 28) + "px");
                                         })
@@ -293,6 +292,7 @@
                     d.readName = d.readName;
                     d.start = +d.start;
                     d.end = +d.end;
+                    d.alleles = d.alleles;
                     if (d.track > numTracks) { numTracks = d.track; }
                 });
 
@@ -324,7 +324,7 @@
                                                 div.transition()
                                                 .duration(200)
                                                 .style("opacity", .9);
-                                                div .html(d.readName)
+                                                div .html(d.alleles)
                                                 .style("left", (d3.event.pageX) + "px")
                                                 .style("top", (d3.event.pageY - 28) + "px");
                                             })

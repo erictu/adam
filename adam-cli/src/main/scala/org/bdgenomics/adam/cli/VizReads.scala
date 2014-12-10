@@ -28,7 +28,7 @@ import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.adam.rdd.read.AlignmentRecordContext._
 import org.bdgenomics.adam.rdd.variation.VariationContext._ //to do the filtering by
 import org.bdgenomics.adam.rich.ReferenceMappingContext._
-import org.bdgenomics.formats.avro.{ AlignmentRecord, Genotype }
+import org.bdgenomics.formats.avro.{ AlignmentRecord, Genotype, GenotypeAllele }
 import org.fusesource.scalate.TemplateEngine
 import org.json4s._
 import org.kohsuke.args4j.{ Argument, Option => Args4jOption }
@@ -77,7 +77,9 @@ object VizReads extends ADAMCommandCompanion {
       println("alleles are: ")
       println(referenceAllele)
       println(alternateAllele)
-      tracks += new VariationJson(aRec.getVariant.getContig.getContigName, referenceAllele, alternateAllele, aRec.getVariant.getStart, aRec.getVariant.getEnd, track)
+      println(aRec.getAlleles)
+      println(aRec.getAlleles.mkString)
+      tracks += new VariationJson(aRec.getVariant.getContig.getContigName, aRec.getAlleles.mkString(" / "), aRec.getVariant.getStart, aRec.getVariant.getEnd, track)
       //TODO: add in alleles here and Additional Info
     }
     tracks.toList
@@ -118,7 +120,7 @@ object VizReads extends ADAMCommandCompanion {
 }
 
 case class TrackJson(readName: String, start: Long, end: Long, track: Long)
-case class VariationJson(contigName: String, refAllele: String, altAllele: String, start: Long, end: Long, track: Long)
+case class VariationJson(contigName: String, alleles: String, start: Long, end: Long, track: Long)
 case class FreqJson(base: Long, freq: Long)
 
 class VizReadsArgs extends Args4jBase with ParquetArgs {
