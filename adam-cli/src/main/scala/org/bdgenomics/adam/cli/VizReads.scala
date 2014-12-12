@@ -74,11 +74,11 @@ object VizReads extends ADAMCommandCompanion {
       val aRec = rec.asInstanceOf[Genotype]
       val referenceAllele = aRec.getVariant.getReferenceAllele
       val alternateAllele = aRec.getVariant.getAlternateAllele
-      println("alleles are: ")
-      println(referenceAllele)
-      println(alternateAllele)
-      println(aRec.getAlleles)
-      println(aRec.getAlleles.mkString)
+      // println("alleles are: ")
+      // println(referenceAllele)
+      // println(alternateAllele)
+      // println(aRec.getAlleles)
+      // println(aRec.getAlleles.mkString)
       tracks += new VariationJson(aRec.getVariant.getContig.getContigName, aRec.getAlleles.mkString(" / "), aRec.getVariant.getStart, aRec.getVariant.getEnd, track)
       //TODO: add in alleles here and Additional Info
     }
@@ -197,8 +197,8 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport { //look into t
       "base" -> VizReads.base.toString,
       "numTracks" -> filteredGenotypeTrack.numTracks.toString,
       "trackHeight" -> VizReads.trackHeight.toString)
-    println("DisplayMap")
-    displayMap.foreach(println)
+    // println("DisplayMap")
+    // displayMap.foreach(println)
     templateEngine.layout("adam-cli/src/main/webapp/WEB-INF/layouts/variants.ssp",
       displayMap) //putting this here allows acces in ssp file
   }
@@ -212,7 +212,7 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport { //look into t
     input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input) //ERROR: where is the implicit mapping?
     val vizJson = VizReads.printVariationJson(filteredGenotypeTrack) //TODO: analog for variants?
-    println("vizJson")
+    // println("vizJson")
     vizJson.foreach(println)
     vizJson
   }
@@ -231,7 +231,7 @@ class VizReads(protected val args: VizReadsArgs) extends ADAMSparkCommand[VizRea
     //TODO: this is causing an error:
     // println("inputPath is: " + args.inputPath)
     // if (inputPath)
-    println("refName is: " + args.refName)
+    // println("refName is: " + args.refName)
     VizReads.variants = sc.adamVCFLoad(args.inputPath).flatMap(_.genotypes)
     // Exception in thread "main" htsjdk.tribble.TribbleException: 
     // Input stream does not contain a BCF encoded file; BCF magic header info not found, at record 0 with position 0:

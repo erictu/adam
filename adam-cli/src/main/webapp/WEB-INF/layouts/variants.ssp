@@ -62,7 +62,10 @@
             pointer-events: none;
         }
         rect {
-            fill: slategray;
+            fill: red;
+        }
+        altrect {
+            fill: slategrey;
         }
         input[type="text"] {
             height: 22px;
@@ -174,6 +177,7 @@
                 d.end = +d.end;
                 d.track = +d.track;
                 d.alleles = d.alleles;
+                
             });
 
             // Add the rectangles
