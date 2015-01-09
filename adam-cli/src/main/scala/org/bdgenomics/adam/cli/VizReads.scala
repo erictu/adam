@@ -181,8 +181,6 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport {
     contentType = "text/html"
 
     val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
-    println("Inputforeach")
-    input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input)
     val templateEngine = new TemplateEngine
     val displayMap = Map("regInfo" -> (regInfo.referenceName, regInfo.start.toString, regInfo.end.toString),
@@ -198,13 +196,9 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport {
     contentType = formats("json")
 
     regInfo = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
-    println(regInfo)
     val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
-    input.foreach(println)
     val filteredGenotypeTrack = new OrderedTrackedLayout(input)
-    val vizJson = VizReads.printVariationJson(filteredGenotypeTrack)
-    vizJson.foreach(println)
-    vizJson
+    VizReads.printVariationJson(filteredGenotypeTrack)
   }
 
 }
