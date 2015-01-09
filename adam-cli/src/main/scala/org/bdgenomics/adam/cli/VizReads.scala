@@ -238,6 +238,3 @@ class VizReads(protected val args: VizReadsArgs) extends ADAMSparkCommand[VizRea
   }
 
 }
-
-//na12878
-
