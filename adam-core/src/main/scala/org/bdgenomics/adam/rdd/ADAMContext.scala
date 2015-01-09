@@ -34,7 +34,6 @@ import org.bdgenomics.adam.models._
 import org.bdgenomics.adam.predicates.ADAMPredicate
 import org.bdgenomics.adam.projections.{ AlignmentRecordField, NucleotideContigFragmentField, Projection }
 import org.bdgenomics.adam.rdd.read.AlignmentRecordContext
-//ERIC
 import org.bdgenomics.adam.rdd.variation.VariationContext._
 
 import org.bdgenomics.adam.rich.RichAlignmentRecord
@@ -275,7 +274,6 @@ class ADAMContext(val sc: SparkContext) extends Serializable with Logging {
       None
   }
 
-  //ERIC
   def maybeLoadVcf[U <: ADAMPredicate[Genotype]](
     filePath: String,
     predicate: Option[Class[U]] = None,
