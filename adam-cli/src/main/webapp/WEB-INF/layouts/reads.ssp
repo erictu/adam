@@ -147,13 +147,10 @@
         </li>
     </ul>
     <br>
-    <script> //default to display something first
-        //accessing elements of regInfo
+    <script>
         var refName = "${regInfo._1}";
         var start = parseInt(${regInfo._2}, 10);
-        var startSeen = start
         var end = parseInt(${regInfo._3}, 10);
-        var endSeen = end 
         var width = parseInt(${width}, 10);
         var base = parseInt(${base}, 10);
         var trackHeight = parseInt(${trackHeight}, 10);
@@ -161,7 +158,7 @@
         var height = (numTracks+1) * trackHeight;
         var jsonLocation = "/reads/" + refName + "?start=" + start + "&end=" + end;
 
-        var svgContainer = d3.select("body") 
+        var svgContainer = d3.select("body")
                              .append("svg")
                              .attr("height", (height+base))
                              .attr("width", width);
