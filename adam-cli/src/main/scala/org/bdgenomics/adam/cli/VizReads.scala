@@ -26,7 +26,7 @@ import org.bdgenomics.adam.projections.AlignmentRecordField._
 import org.bdgenomics.adam.projections.Projection
 import org.bdgenomics.adam.rdd.ADAMContext._
 import org.bdgenomics.adam.rich.ReferenceMappingContext._
-import org.bdgenomics.formats.avro.{ AlignmentRecord, Genotype, GenotypeAllele }
+import org.bdgenomics.formats.avro.{ AlignmentRecord, Feature, Genotype, GenotypeAllele, NucleotideContigFragment }
 import org.fusesource.scalate.TemplateEngine
 import org.json4s._
 import org.kohsuke.args4j.{ Argument, Option => Args4jOption }
@@ -37,11 +37,13 @@ object VizReads extends ADAMCommandCompanion {
   val commandName: String = "viz"
   val commandDescription: String = "Generates images from sections of the genome"
 
-  var refName = ""
-  var inputPath = ""
+  var readsRefName = ""
+  var variantsRefName = ""
+  // var inputPath = ""
   var reads: RDD[AlignmentRecord] = null
   var variants: RDD[Genotype] = null
-
+  var reference: RDD[NucleotideContigFragment] = null
+  var features: RDD[Feature] = null
   val trackHeight = 10
   val width = 1200
   val height = 400
@@ -114,11 +116,17 @@ case class VariationJson(contigName: String, alleles: String, start: Long, end: 
 case class FreqJson(base: Long, freq: Long)
 
 class VizReadsArgs extends Args4jBase with ParquetArgs {
-  @Argument(required = true, metaVar = "INPUT", usage = "The ADAM Records file to view", index = 0)
-  var inputPath: String = null
+  @Argument(required = true, metaVar = "READS", usage = "The reads file to view", index = 0)
+  var readPath: String = null
 
-  @Argument(required = true, metaVar = "REFNAME", usage = "The reference to view", index = 1)
-  var refName: String = null
+  @Argument(required = true, metaVar = "READS REFNAME", usage = "The reads reference to view", index = 1)
+  var readsRefName: String = null
+
+  @Argument(required = true, metaVar = "VARIANTS", usage = "The variants file to view", index = 2)
+  var variantsPath: String = null
+
+  @Argument(required = true, metaVar = "VARIANTS REFNAME", usage = "The variants reference to view", index = 3)
+  var variantsRefName: String = null
 
   @Args4jOption(required = false, name = "-port", usage = "The port to bind to for visualization. The default is 8080.")
   var port: Int = 8080
@@ -126,7 +134,8 @@ class VizReadsArgs extends Args4jBase with ParquetArgs {
 
 class VizServlet extends ScalatraServlet with JacksonJsonSupport {
   protected implicit val jsonFormats: Formats = DefaultFormats
-  var regInfo = ReferenceRegion(VizReads.refName, 0, 200)
+  var readsRegion = ReferenceRegion(VizReads.readsRefName, 0, 200)
+  var variantsRegion = ReferenceRegion(VizReads.variantsRefName, 0, 200)
   var filteredLayout: OrderedTrackedLayout[AlignmentRecord] = null
   var filteredArray: Array[AlignmentRecord] = null
 
@@ -137,10 +146,10 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport {
   get("/reads/?") {
     contentType = "text/html"
 
-    filteredLayout = new OrderedTrackedLayout(VizReads.reads.filterByOverlappingRegion(regInfo).collect())
+    filteredLayout = new OrderedTrackedLayout(VizReads.reads.filterByOverlappingRegion(readsRegion).collect())
     val templateEngine = new TemplateEngine
     templateEngine.layout("adam-cli/src/main/webapp/WEB-INF/layouts/reads.ssp",
-      Map("regInfo" -> (regInfo.referenceName, regInfo.start.toString, regInfo.end.toString),
+      Map("readsRegion" -> (readsRegion.referenceName, readsRegion.start.toString, readsRegion.end.toString),
         "width" -> VizReads.width.toString,
         "base" -> VizReads.base.toString,
         "numTracks" -> filteredLayout.numTracks.toString,
@@ -150,18 +159,18 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport {
   get("/reads/:ref") {
     contentType = formats("json")
 
-    regInfo = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
-    filteredLayout = new OrderedTrackedLayout(VizReads.reads.filterByOverlappingRegion(regInfo).collect())
+    readsRegion = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
+    filteredLayout = new OrderedTrackedLayout(VizReads.reads.filterByOverlappingRegion(readsRegion).collect())
     VizReads.printTrackJson(filteredLayout)
   }
 
   get("/freq") {
     contentType = "text/html"
 
-    filteredArray = VizReads.reads.filterByOverlappingRegion(regInfo).collect()
+    filteredArray = VizReads.reads.filterByOverlappingRegion(readsRegion).collect()
     val templateEngine = new TemplateEngine
     templateEngine.layout("adam-cli/src/main/webapp/WEB-INF/layouts/freq.ssp",
-      Map("regInfo" -> (regInfo.referenceName, regInfo.start.toString, regInfo.end.toString),
+      Map("readsRegion" -> (readsRegion.referenceName, readsRegion.start.toString, readsRegion.end.toString),
         "width" -> VizReads.width.toString,
         "height" -> VizReads.height.toString,
         "base" -> VizReads.base.toString))
@@ -170,18 +179,18 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport {
   get("/freq/:ref") {
     contentType = formats("json")
 
-    regInfo = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
-    filteredArray = VizReads.reads.filterByOverlappingRegion(regInfo).collect()
-    VizReads.printJsonFreq(filteredArray, regInfo)
+    readsRegion = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
+    filteredArray = VizReads.reads.filterByOverlappingRegion(readsRegion).collect()
+    VizReads.printJsonFreq(filteredArray, readsRegion)
   }
 
   get("/variants/?") {
     contentType = "text/html"
 
-    val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
+    val input = VizReads.variants.filterByOverlappingRegion(variantsRegion).collect()
     val filteredGenotypeTrack = new OrderedTrackedLayout(input)
     val templateEngine = new TemplateEngine
-    val displayMap = Map("regInfo" -> (regInfo.referenceName, regInfo.start.toString, regInfo.end.toString),
+    val displayMap = Map("variantsRegion" -> (variantsRegion.referenceName, variantsRegion.start.toString, variantsRegion.end.toString),
       "width" -> VizReads.width.toString,
       "base" -> VizReads.base.toString,
       "numTracks" -> filteredGenotypeTrack.numTracks.toString,
@@ -193,8 +202,8 @@ class VizServlet extends ScalatraServlet with JacksonJsonSupport {
   get("/variants/:ref") {
     contentType = formats("json")
 
-    regInfo = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
-    val input = VizReads.variants.filterByOverlappingRegion(regInfo).collect()
+    variantsRegion = ReferenceRegion(params("ref"), params("start").toLong, params("end").toLong)
+    val input = VizReads.variants.filterByOverlappingRegion(variantsRegion).collect()
     val filteredGenotypeTrack = new OrderedTrackedLayout(input)
     VizReads.printVariationJson(filteredGenotypeTrack)
   }
@@ -204,17 +213,27 @@ class VizReads(protected val args: VizReadsArgs) extends ADAMSparkCommand[VizRea
   val companion: ADAMCommandCompanion = VizReads
 
   def run(sc: SparkContext, job: Job): Unit = {
-    VizReads.refName = args.refName
-
     val proj = Projection(contig, readMapped, readName, start, end)
 
-    if (args.inputPath.endsWith(".bam") || args.inputPath.endsWith(".sam") || args.inputPath.endsWith(".align.adam")) {
-      VizReads.reads = sc.loadAlignments(args.inputPath, projection = Some(proj))
+    if (args.readPath.endsWith(".bam") || args.readPath.endsWith(".sam") || args.readPath.endsWith(".align.adam")) {
+      VizReads.reads = sc.loadAlignments(args.readPath, projection = Some(proj))
+      VizReads.readsRefName = args.readsRefName
     }
 
-    if (args.inputPath.endsWith(".vcf") || args.inputPath.endsWith(".gt.adam")) {
-      VizReads.variants = sc.loadGenotypes(args.inputPath, projection = Some(proj))
+    if (args.variantsPath.endsWith(".vcf") || args.variantsPath.endsWith(".gt.adam")) {
+      VizReads.variants = sc.loadGenotypes(args.variantsPath, projection = Some(proj))
+      VizReads.variantsRefName = args.variantsRefName
     }
+
+    // if (args.inputPath.endsWith(".fa")) {
+    //   println("DETECTED FA")
+    //   VizReads.reference = sc.loadSequence(args.inputPath, projection = Some(proj))
+    // }
+
+    // if (args.inputPath.endsWith(".bed")) {
+    //   println("DETECTED BED")
+    //   VizReads.features = sc.loadFeatures(args.inputPath, projection = Some(proj))
+    // }
 
     val server = new org.eclipse.jetty.server.Server(args.port)
     val handlers = new org.eclipse.jetty.server.handler.ContextHandlerCollection()

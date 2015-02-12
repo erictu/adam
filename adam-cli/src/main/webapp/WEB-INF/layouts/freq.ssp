@@ -1,4 +1,4 @@
-<%@ val regInfo: (String, String, String) %>
+<%@ val readsRegion: (String, String, String) %>
 <%@ val width: String %>
 <%@ val height: String %>
 <%@ val base: String %>
@@ -56,11 +56,11 @@
             height: 22px;
         }
     </style>
-    <title>Genome visualization for ADAM</title>
+    <title>mango: Genome visualization for ADAM</title>
 </head>
 <body>
-    <h1>Genome visualization for <span class='highlight'>ADAM</span></h1>
-    <h2 align="center">current region: ${regInfo._1}:</h2>
+    <h1><span class='highlight'>mango:</span> Genome visualization for <span class='highlight'>ADAM</span></h1>
+    <h2 align="center">current region: ${readsRegion._1}:</h2>
     <br>
     <ul>
         <li>move:</li>
@@ -136,9 +136,9 @@
     </ul>
     <br>
     <script>
-        var refName = "${regInfo._1}";
-        var start = parseInt(${regInfo._2}, 10);
-        var end = parseInt(${regInfo._3}, 10);
+        var refName = "${readsRegion._1}";
+        var start = parseInt(${readsRegion._2}, 10);
+        var end = parseInt(${readsRegion._3}, 10);
         var width = parseInt(${width}, 10);
         var base = parseInt(${base}, 10);
         var height = ${height};
