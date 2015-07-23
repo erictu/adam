@@ -377,6 +377,21 @@ class ADAMContext(val sc: SparkContext) extends Serializable with Logging {
     records.flatMap(p => vcc.convert(p._2.get))
   }
 
+  //ERIC
+  def loadIndexedVcf(filePath: String, sd: Option[SequenceDictionary], viewRegion: ReferenceRegion): RDD[VariantContext] = {
+    val job = HadoopUtil.newJob(sc)
+    val vcc = new VariantContextConverter(sd)
+    val records = sc.newAPIHadoopFile(
+      filePath,
+      classOf[IndexedVcfInputFormat], classOf[LongWritable], classOf[VariantContextWritable],
+      ContextUtil.getConfiguration(job))
+    if (Metrics.isRecording) records.instrument() else records
+    val indexedVcf = IndexedVcfInputFormat(new Path(filePath),
+      new Path(filePath + ".tbi"),
+      viewRegion)
+    records.flatMap(p => vcc.convert(p._2.get))
+  }
+
   def loadParquetGenotypes(
     filePath: String,
     predicate: Option[FilterPredicate] = None,
