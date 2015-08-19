@@ -99,8 +99,8 @@ class BaseQualityRecalibration(
     def readId(read: DecadentRead): String =
       read.name +
         (if (read.isNegativeRead) "-" else "+") +
-        (if (read.record.getFirstOfPair) "1" else "") +
-        (if (read.record.getSecondOfPair) "2" else "")
+        (if (read.record.getReadNum == 0) "1" else "") +
+        (if (read.record.getReadNum == 1) "2" else "")
 
     val readLengths =
       input.map(read => (readId(read), read.residues.length)).collectAsMap()

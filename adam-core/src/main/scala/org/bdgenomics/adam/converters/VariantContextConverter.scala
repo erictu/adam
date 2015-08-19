@@ -219,6 +219,9 @@ class VariantContextConverter(dict: Option[SequenceDictionary] = None) extends S
       .setStart(vc.getStart - 1 /* ADAM is 0-indexed */ )
       .setEnd(vc.getEnd /* ADAM is 0-indexed, so the 1-indexed inclusive end becomes exclusive */ )
       .setReferenceAllele(vc.getReference.getBaseString)
+    if (vc.hasLog10PError) {
+      builder.setVariantErrorProbability(vc.getPhredScaledQual.intValue())
+    }
     alt.foreach(builder.setAlternateAllele(_))
     builder.build
   }
@@ -249,6 +252,12 @@ class VariantContextConverter(dict: Option[SequenceDictionary] = None) extends S
 
         if (g.hasGQ) genotype.setGenotypeQuality(g.getGQ)
         if (g.hasDP) genotype.setReadDepth(g.getDP)
+        // println("__________________________________________________________________")
+        println(g.getDP)
+        // val testad = g.getAD
+        // println(testad(0))
+        // println(testad(1))
+
         if (g.hasAD) {
           val ad = g.getAD
           genotype.setReferenceReadDepth(ad(0)).setAlternateReadDepth(ad(1))
@@ -265,21 +274,21 @@ class VariantContextConverter(dict: Option[SequenceDictionary] = None) extends S
     assert(vc.isBiallelic)
     extractGenotypes(vc, variant, annotations,
       (g: htsjdk.variant.variantcontext.Genotype, b: Genotype.Builder) => {
-        if (g.hasPL) b.setGenotypeLikelihoods(g.getPL.toList.map(p => p: java.lang.Integer))
+        if (g.hasPL) b.setGenotypeLikelihoods(g.getPL.toList.map(p => p: java.lang.Float))
       })
   }
 
   private def extractReferenceGenotypes(vc: BroadVariantContext, variant: Variant, annotations: VariantCallingAnnotations): Seq[Genotype] = {
     assert(vc.isBiallelic)
     extractGenotypes(vc, variant, annotations, (g, b) => {
-      if (g.hasPL) b.setNonReferenceLikelihoods(g.getPL.toList.map(p => p: java.lang.Integer))
+      if (g.hasPL) b.setNonReferenceLikelihoods(g.getPL.toList.map(p => p: java.lang.Float))
     })
   }
 
   private def extractReferenceModelGenotypes(vc: BroadVariantContext, variant: Variant, annotations: VariantCallingAnnotations): Seq[Genotype] = {
     extractGenotypes(vc, variant, annotations, (g, b) => {
       if (g.hasPL) {
-        val pls = g.getPL.map(p => p: java.lang.Integer)
+        val pls = g.getPL.map(p => p: java.lang.Float)
         val splitAt: Int = g.getPloidy match {
           case 1 => 2
           case 2 => 3
@@ -295,10 +304,6 @@ class VariantContextConverter(dict: Option[SequenceDictionary] = None) extends S
     val call: VariantCallingAnnotations.Builder = VariantCallingAnnotations.newBuilder
 
     // VCF QUAL, FILTER and INFO fields
-    if (vc.hasLog10PError) {
-      call.setVariantCallErrorProbability(vc.getPhredScaledQual.asInstanceOf[Float])
-    }
-
     if (vc.filtersWereApplied && vc.isFiltered) {
       call.setVariantIsPassing(false).setVariantFilters(new java.util.ArrayList(vc.getFilters))
     } else if (vc.filtersWereApplied) {
@@ -344,7 +349,7 @@ class VariantContextConverter(dict: Option[SequenceDictionary] = None) extends S
         }
 
         if (g.getGenotypeLikelihoods != null && !g.getGenotypeLikelihoods.isEmpty)
-          gb.PL(g.getGenotypeLikelihoods.map(p => p: Int).toArray)
+          gb.PL(g.getGenotypeLikelihoods.map(p => p.toDouble).toArray)
 
         gb.make
       }))

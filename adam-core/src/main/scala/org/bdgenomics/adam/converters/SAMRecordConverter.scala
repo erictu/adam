@@ -150,10 +150,10 @@ class SAMRecordConverter extends Serializable with Logging {
             builder.setProperPair(true)
           }
           if (samRecord.getFirstOfPairFlag) {
-            builder.setFirstOfPair(true)
+            builder.setReadNum(0)
           }
           if (samRecord.getSecondOfPairFlag) {
-            builder.setSecondOfPair(true)
+            builder.setReadNum(1)
           }
         }
         if (samRecord.getDuplicateReadFlag) {

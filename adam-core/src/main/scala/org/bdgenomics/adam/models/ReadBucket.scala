@@ -96,9 +96,9 @@ class ReadBucketSerializer extends Serializer[ReadBucket] {
 object ReadBucket {
   implicit def singleReadBucketToReadBucket(bucket: SingleReadBucket): ReadBucket = {
     val (pairedPrimary, unpairedPrimary) = bucket.primaryMapped.partition(_.getReadPaired)
-    val (pairedFirstPrimary, pairedSecondPrimary) = pairedPrimary.partition(_.getFirstOfPair)
+    val (pairedFirstPrimary, pairedSecondPrimary) = pairedPrimary.partition(_.getReadNum == 0)
     val (pairedSecondary, unpairedSecondary) = bucket.secondaryMapped.partition(_.getReadPaired)
-    val (pairedFirstSecondary, pairedSecondSecondary) = pairedSecondary.partition(_.getFirstOfPair)
+    val (pairedFirstSecondary, pairedSecondSecondary) = pairedSecondary.partition(_.getReadNum == 0)
 
     new ReadBucket(unpairedPrimary,
       pairedFirstPrimary,

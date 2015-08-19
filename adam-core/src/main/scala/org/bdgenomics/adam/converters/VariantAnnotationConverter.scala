@@ -94,17 +94,17 @@ object VariantAnnotationConverter extends Serializable {
     AttrKey("omimId", attrAsString _, new VCFInfoHeaderLine("VAR", 1, VCFHeaderLineType.String, "MIM entry with variant mapped to rsID")))
 
   val INFO_KEYS: Seq[AttrKey] = Seq(
-    AttrKey("clippingRankSum", attrAsFloat _, new VCFInfoHeaderLine("ClippingRankSum", 1, VCFHeaderLineType.Float, "Z-score From Wilcoxon rank sum test of Alt vs. Ref number of hard clipped bases")),
-    AttrKey("readDepth", attrAsInt _, VCFStandardHeaderLines.getInfoLine(VCFConstants.DEPTH_KEY)),
+    // AttrKey("clippingRankSum", attrAsFloat _, new VCFInfoHeaderLine("ClippingRankSum", 1, VCFHeaderLineType.Float, "Z-score From Wilcoxon rank sum test of Alt vs. Ref number of hard clipped bases")),
+    // AttrKey("readDepth", attrAsInt _, VCFStandardHeaderLines.getInfoLine(VCFConstants.DEPTH_KEY)),
     AttrKey("fisherStrandBiasPValue", attrAsFloat _, VCFStandardHeaderLines.getInfoLine(VCFConstants.STRAND_BIAS_KEY)),
-    AttrKey("haplotypeScore", attrAsFloat _, new VCFInfoHeaderLine("HaplotypeScore", 1, VCFHeaderLineType.Float, "Consistency of the site with at most two segregating haplotypes")),
-    AttrKey("inbreedingCoefficient", attrAsFloat _, new VCFInfoHeaderLine("InbreedingCoeff", 1, VCFHeaderLineType.Float, "Inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation")),
+    // AttrKey("haplotypeScore", attrAsFloat _, new VCFInfoHeaderLine("HaplotypeScore", 1, VCFHeaderLineType.Float, "Consistency of the site with at most two segregating haplotypes")),
+    // AttrKey("inbreedingCoefficient", attrAsFloat _, new VCFInfoHeaderLine("InbreedingCoeff", 1, VCFHeaderLineType.Float, "Inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation")),
     AttrKey("rmsMapQ", attrAsFloat _, VCFStandardHeaderLines.getInfoLine(VCFConstants.RMS_MAPPING_QUALITY_KEY)),
     AttrKey("mapq0Reads", attrAsInt _, VCFStandardHeaderLines.getInfoLine(VCFConstants.MAPPING_QUALITY_ZERO_KEY)),
     AttrKey("mqRankSum", attrAsFloat _, new VCFInfoHeaderLine("MQRankSum", 1, VCFHeaderLineType.Float, "Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities")),
-    AttrKey("usedForNegativeTrainingSet", attrAsBoolean _, new VCFInfoHeaderLine("NEGATIVE_TRAIN_SITE", 1, VCFHeaderLineType.Flag, "This variant was used to build the negative training set of bad variants")),
-    AttrKey("usedForPositiveTrainingSet", attrAsBoolean _, new VCFInfoHeaderLine("POSITIVE_TRAIN_SITE", 1, VCFHeaderLineType.Flag, "This variant was used to build the positive training set of good variants")),
-    AttrKey("variantQualityByDepth", attrAsFloat _, new VCFInfoHeaderLine("QD", 1, VCFHeaderLineType.Float, "Variant Confidence/Quality by Depth")),
+    // AttrKey("usedForNegativeTrainingSet", attrAsBoolean _, new VCFInfoHeaderLine("NEGATIVE_TRAIN_SITE", 1, VCFHeaderLineType.Flag, "This variant was used to build the negative training set of bad variants")),
+    // AttrKey("usedForPositiveTrainingSet", attrAsBoolean _, new VCFInfoHeaderLine("POSITIVE_TRAIN_SITE", 1, VCFHeaderLineType.Flag, "This variant was used to build the positive training set of good variants")),
+    // AttrKey("variantQualityByDepth", attrAsFloat _, new VCFInfoHeaderLine("QD", 1, VCFHeaderLineType.Float, "Variant Confidence/Quality by Depth")),
     AttrKey("readPositionRankSum", attrAsFloat _, new VCFInfoHeaderLine("ReadPosRankSum", 1, VCFHeaderLineType.Float, "Z-score from Wilcoxon rank sum test of Alt vs. Ref read position bias")),
     AttrKey("vqslod", attrAsFloat _, new VCFInfoHeaderLine("VQSLOD", 1, VCFHeaderLineType.Float, "Log odds ratio of being a true variant versus being false under the trained gaussian mixture model")),
     AttrKey("culprit", attrAsString _, new VCFInfoHeaderLine("culprit", 1, VCFHeaderLineType.String, "The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out")))

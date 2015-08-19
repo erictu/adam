@@ -42,9 +42,9 @@ class AlignmentRecordConverter extends Serializable {
     val readNameSuffix =
       if (maybeAddSuffix &&
         !AlignmentRecordConverter.readNameHasPairedSuffix(adamRecord) &&
-        adamRecord.getFirstOfPair != null) {
+        adamRecord.getReadNum == 0) {
         "/" + (
-          if (adamRecord.getFirstOfPair)
+          if (adamRecord.getReadNum == 0)
             "1"
           else
             "2"
@@ -126,9 +126,9 @@ class AlignmentRecordConverter extends Serializable {
           .foreach(v => builder.setMateUnmappedFlag(!v.booleanValue))
         Option(adamRecord.getProperPair)
           .foreach(v => builder.setProperPairFlag(v.booleanValue))
-        Option(adamRecord.getFirstOfPair)
+        Option(adamRecord.getReadNum == 0)
           .foreach(v => builder.setFirstOfPairFlag(v.booleanValue))
-        Option(adamRecord.getSecondOfPair)
+        Option(adamRecord.getReadNum == 1)
           .foreach(v => builder.setSecondOfPairFlag(v.booleanValue))
       }
     })

@@ -181,12 +181,12 @@ class AlignmentRecordRDDFunctionsSuite extends ADAMFunSuite {
     assert(rddA.count() == 6)
 
     rddA.foreach(read => {
-      if (read.getFirstOfPair == read.getSecondOfPair)
+      if ((read.getReadNum == 0) == (read.getReadNum == 1))
         throw new Exception(
           "Exactly one of first-,second-of-pair should be true for %s: %s %s".format(
             read.toString,
-            read.getFirstOfPair,
-            read.getSecondOfPair
+            read.getReadNum == 0,
+            read.getReadNum == 1
           )
         )
     })
