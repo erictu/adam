@@ -470,6 +470,21 @@
         <version>${htsjdk.version}</version>
       </dependency>
       <dependency>
+        <groupId>edu.berkeley.cs.amplab</groupId>
+        <artifactId>lazymango_2.10</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>edu.berkeley.cs.amplab</groupId>
+        <artifactId>spark-intervalrdd_2.10</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.akmorrow13</groupId>
+        <artifactId>interval-tree_2.10</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>args4j</groupId>
         <artifactId>args4j</artifactId>
         <version>2.0.31</version> <!-- note: version 2.32 is not binary compatible -->
