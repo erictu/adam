@@ -476,6 +476,11 @@
       </dependency>
       <dependency>
         <groupId>edu.berkeley.cs.amplab</groupId>
+        <artifactId>spark-indexedrdd_2.10</artifactId>
+        <version>0.3</version>
+      </dependency>
+      <dependency>
+        <groupId>edu.berkeley.cs.amplab</groupId>
         <artifactId>spark-intervalrdd_2.10</artifactId>
         <version>0.1-SNAPSHOT</version>
       </dependency>

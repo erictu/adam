@@ -121,6 +121,10 @@
       <artifactId>spark-intervalrdd_2.10</artifactId>
     </dependency>
     <dependency>
+      <groupId>edu.berkeley.cs.amplab</groupId>
+      <artifactId>spark-indexedrdd_2.10</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.github.akmorrow13</groupId>
       <artifactId>interval-tree_2.10</artifactId>
     </dependency>
