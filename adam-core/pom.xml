@@ -184,6 +184,14 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.github.erictu</groupId>
+      <artifactId>spark-intervalrdd_2.10</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.erictu</groupId>
+      <artifactId>interval-tree_2.10</artifactId>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

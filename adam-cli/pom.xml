@@ -209,6 +209,14 @@
       <groupId>net.codingwell</groupId>
       <artifactId>scala-guice_2.10</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.github.erictu</groupId>
+      <artifactId>spark-intervalrdd_2.10</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.erictu</groupId>
+      <artifactId>interval-tree_2.10</artifactId>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

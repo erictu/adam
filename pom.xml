@@ -35,7 +35,7 @@
     <module>adam-apis</module>
     <module>adam-cli</module>
   </modules>
-
+  
   <licenses>
     <license>
       <name>Apache License</name>
@@ -523,6 +523,16 @@
         <groupId>net.codingwell</groupId>
         <artifactId>scala-guice_2.10</artifactId>
         <version>4.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.erictu</groupId>
+        <artifactId>spark-intervalrdd_2.10</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.erictu</groupId>
+        <artifactId>interval-tree_2.10</artifactId>
+        <version>0.1-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
